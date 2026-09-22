@@ -95,6 +95,71 @@ export async function getBoardState(): Promise<BoardState> {
   };
 }
 
+export type TradeStatus = "pending" | "accepted" | "declined" | "cancelled";
+export type TradeView = {
+  id: string;
+  status: TradeStatus;
+  direction: "incoming" | "outgoing"; // incoming = awaiting my response
+  partnerTeamName: string;
+  myPlayers: { id: string; name: string }[];    // players my team gives up
+  theirPlayers: { id: string; name: string }[]; // players my team receives
+  createdAt: string;
+  resolvedAt: string | null;
+};
+export type MyTrades = { incoming: TradeView[]; outgoing: TradeView[]; recent: TradeView[] };
+
+type TradeRow = {
+  id: string;
+  from_team_id: string;
+  to_team_id: string;
+  from_player_ids: string[];
+  to_player_ids: string[];
+  status: TradeStatus;
+  created_at: string;
+  resolved_at: string | null;
+};
+
+// Trades involving my team, split for the My-team panel. Name resolution reuses
+// the teams/players the account page already loaded via getBoardState().
+export async function getMyTrades(
+  myTeamId: string,
+  teams: Team[],
+  players: Player[],
+): Promise<MyTrades> {
+  const db = supabaseServer();
+  const { data } = await db
+    .from("trades")
+    .select("*")
+    .or(`from_team_id.eq.${myTeamId},to_team_id.eq.${myTeamId}`)
+    .order("created_at", { ascending: false });
+
+  const teamName = new Map(teams.map((t) => [t.id, t.name]));
+  const playerName = new Map(players.map((p) => [p.id, p.name]));
+  const names = (ids: string[]) =>
+    ids.map((id) => ({ id, name: playerName.get(id) ?? "—" }));
+
+  const view = (row: TradeRow): TradeView => {
+    const outgoing = row.from_team_id === myTeamId;
+    return {
+      id: row.id,
+      status: row.status,
+      direction: outgoing ? "outgoing" : "incoming",
+      partnerTeamName: teamName.get(outgoing ? row.to_team_id : row.from_team_id) ?? "—",
+      myPlayers: names(outgoing ? row.from_player_ids : row.to_player_ids),
+      theirPlayers: names(outgoing ? row.to_player_ids : row.from_player_ids),
+      createdAt: row.created_at,
+      resolvedAt: row.resolved_at,
+    };
+  };
+
+  const all = ((data ?? []) as TradeRow[]).map(view);
+  return {
+    incoming: all.filter((t) => t.status === "pending" && t.direction === "incoming"),
+    outgoing: all.filter((t) => t.status === "pending" && t.direction === "outgoing"),
+    recent: all.filter((t) => t.status !== "pending").slice(0, 10),
+  };
+}
+
 // The logged-in user's role context (null userId = anonymous viewer).
 export async function getUserContext() {
   const db = supabaseServer();

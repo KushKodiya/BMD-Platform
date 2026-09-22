@@ -126,3 +126,39 @@ export async function updateMyTeamName(_prev: Result, form: FormData): Promise<R
   revalidatePath("/");
   return {};
 }
+
+// --- Trades: propose / respond / cancel (RPCs enforce ownership + status) ---
+const tradeOk = (): Result => {
+  revalidatePath("/account");
+  revalidatePath("/");
+  return {};
+};
+
+export async function proposeTrade(
+  toTeamId: string,
+  fromPlayerIds: string[],
+  toPlayerIds: string[],
+): Promise<Result> {
+  const { error } = await supabaseServer().rpc("propose_trade", {
+    p_to_team: toTeamId,
+    p_from_players: fromPlayerIds,
+    p_to_players: toPlayerIds,
+  });
+  if (error) return { error: error.message };
+  return tradeOk();
+}
+
+export async function respondTrade(tradeId: string, accept: boolean): Promise<Result> {
+  const { error } = await supabaseServer().rpc("respond_trade", {
+    p_trade_id: tradeId,
+    p_accept: accept,
+  });
+  if (error) return { error: error.message };
+  return tradeOk();
+}
+
+export async function cancelTrade(tradeId: string): Promise<Result> {
+  const { error } = await supabaseServer().rpc("cancel_trade", { p_trade_id: tradeId });
+  if (error) return { error: error.message };
+  return tradeOk();
+}
