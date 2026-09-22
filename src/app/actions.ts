@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
+import { MIN_PICK_SECONDS, MAX_PICK_SECONDS } from "@/lib/clock.mjs";
 
 type Result = { error?: string };
 
@@ -31,6 +32,31 @@ export async function signOut() {
 export async function pickPlayer(_prev: Result, form: FormData): Promise<Result> {
   const db = supabaseServer();
   const { error } = await db.rpc("make_pick", { p_player_id: String(form.get("player_id")) });
+  if (error) return { error: error.message };
+  return ok();
+}
+
+// --- Pick clock expiry: anyone may trip it, the RPC decides if it's real ---
+// Called by the board's countdown when it reaches zero. The caller passes the
+// turn it was watching, so a stale tab can't advance a turn it never saw; the
+// RPC still re-checks the deadline against the DB clock under a row lock, so a
+// wrong or hostile call can only do what the clock already dictates.
+export async function autoPickIfExpired(expectedPickIndex: number): Promise<Result> {
+  const { error } = await supabaseServer().rpc("auto_pick_if_expired", {
+    p_expected_pick_index: expectedPickIndex,
+  });
+  if (error) return { error: error.message };
+  return ok();
+}
+
+// --- Owner setup: the per-pick time limit (RPC enforces owner) ---
+export async function setPickSeconds(seconds: number | null): Promise<Result> {
+  if (seconds !== null && (!Number.isFinite(seconds) || seconds < MIN_PICK_SECONDS || seconds > MAX_PICK_SECONDS)) {
+    return { error: `Pick clock must be between ${MIN_PICK_SECONDS} seconds and 24 hours.` };
+  }
+  const { error } = await supabaseServer().rpc("set_pick_seconds", {
+    p_seconds: seconds === null ? null : Math.round(seconds),
+  });
   if (error) return { error: error.message };
   return ok();
 }
