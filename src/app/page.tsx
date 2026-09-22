@@ -1,9 +1,9 @@
-import { getBoardState, getUserContext } from "@/lib/draft";
+import { getBoardState, getUserContext, getPublicTrades } from "@/lib/draft";
 import { describeLimit } from "@/lib/clock.mjs";
 import PickForm from "./_components/PickForm";
 import OnTheClock from "./_components/OnTheClock";
 import AvailablePlayers from "./_components/AvailablePlayers";
-import { ClockIcon, ListIcon, TrophyIcon, UsersIcon } from "./_components/Icons";
+import { ClockIcon, ListIcon, ShuffleIcon, TrophyIcon, UsersIcon } from "./_components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -13,10 +13,18 @@ export default async function BoardPage() {
   const { draft, orderedTeams, rosters, available, grid, onClockTeamId, teams, players } = board;
   const { autoPickedIds, deadline, serverNow } = board;
 
+  const trades = await getPublicTrades(teams, players);
+
   const teamName = (id: string | null) => teams.find((t) => t.id === id)?.name ?? "—";
   const isMyTurn = !!myTeamId && myTeamId === onClockTeamId;
   const teamCount = orderedTeams.length || teams.length || 1;
   const round = Math.floor(draft.pick_count / teamCount) + 1;
+  const tradeTime = (iso: string | null) =>
+    iso
+      ? new Date(iso).toLocaleString("en-US", {
+          month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+        })
+      : "";
 
   return (
     <>
@@ -221,6 +229,27 @@ export default async function BoardPage() {
           <div className="empty"><p style={{ margin: 0 }}>Teams appear once the order is set.</p></div>
         )}
       </section>
+
+      {/* --- Trade log --------------------------------------------------- */}
+      {trades.length > 0 && (
+        <section className="section">
+          <div className="section-head">
+            <h2><ShuffleIcon size={20} /> Trade log</h2>
+            <span className="badge badge-soft">{trades.length}</span>
+          </div>
+          <ul className="trade-log">
+            {trades.map((t) => (
+              <li key={t.id} className="card">
+                <span className="trade-log-desc">
+                  <strong>{t.fromTeam}</strong> sent {t.fromPlayers.join(", ")} to{" "}
+                  <strong>{t.toTeam}</strong> for {t.toPlayers.join(", ")}
+                </span>
+                <time className="muted trade-log-time">{tradeTime(t.resolvedAt)}</time>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* --- Pool -------------------------------------------------------- */}
       <section className="section">

@@ -160,6 +160,49 @@ export async function getMyTrades(
   };
 }
 
+export type TradeFeedItem = {
+  id: string;
+  resolvedAt: string | null;
+  fromTeam: string;              // proposer
+  toTeam: string;                // partner
+  fromPlayers: string[];         // player names the proposer gave up
+  toPlayers: string[];           // player names the partner gave up
+};
+
+// Accepted trades, newest first, for the public board feed. RLS (migration 0005)
+// exposes only accepted trades, so anonymous viewers can read this too. Names are
+// resolved from the teams/players the board already loaded.
+export async function getPublicTrades(
+  teams: Team[],
+  players: Player[],
+  limit = 20,
+): Promise<TradeFeedItem[]> {
+  const db = supabaseServer();
+  const { data } = await db
+    .from("trades")
+    .select("id, from_team_id, to_team_id, from_player_ids, to_player_ids, resolved_at")
+    .eq("status", "accepted")
+    .order("resolved_at", { ascending: false })
+    .limit(limit);
+
+  const teamName = new Map(teams.map((t) => [t.id, t.name]));
+  const playerName = new Map(players.map((p) => [p.id, p.name]));
+  const names = (ids: string[]) => ids.map((id) => playerName.get(id) ?? "—");
+
+  type Row = {
+    id: string; from_team_id: string; to_team_id: string;
+    from_player_ids: string[]; to_player_ids: string[]; resolved_at: string | null;
+  };
+  return ((data ?? []) as Row[]).map((r) => ({
+    id: r.id,
+    resolvedAt: r.resolved_at,
+    fromTeam: teamName.get(r.from_team_id) ?? "—",
+    toTeam: teamName.get(r.to_team_id) ?? "—",
+    fromPlayers: names(r.from_player_ids),
+    toPlayers: names(r.to_player_ids),
+  }));
+}
+
 // The logged-in user's role context (null userId = anonymous viewer).
 export async function getUserContext() {
   const db = supabaseServer();
