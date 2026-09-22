@@ -3,6 +3,7 @@ import { supabaseServer } from "@/lib/supabase/server";
 import { getUserContext } from "@/lib/draft";
 import EmailForm from "../_components/EmailForm";
 import TeamNameForm from "../_components/TeamNameForm";
+import { UsersIcon } from "../_components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -18,14 +19,28 @@ export default async function AccountPage() {
 
   return (
     <>
-      <h1>My account</h1>
+      <header className="section" style={{ marginTop: "0.5rem" }}>
+        <p className="eyebrow"><UsersIcon size={13} /> Your team</p>
+        <h1 className="display-gradient">My account</h1>
+      </header>
 
-      <h2>Team name</h2>
-      <TeamNameForm current={team?.name ?? ""} />
+      <div className="stack section" style={{ gap: "1rem" }}>
+        <section className="card reveal" style={{ ["--i" as string]: 0 }}>
+          <h2>Team name</h2>
+          <p className="muted" style={{ marginTop: 0 }}>
+            How your team appears on the board and in the draft order.
+          </p>
+          <TeamNameForm current={team?.name ?? ""} />
+        </section>
 
-      <h2>Notification email</h2>
-      <p>Where you&apos;ll be nudged if you&apos;re on the clock for over 4 hours.</p>
-      <EmailForm current={profile?.email ?? null} />
+        <section className="card reveal" style={{ ["--i" as string]: 1 }}>
+          <h2>Notifications</h2>
+          <p className="muted" style={{ marginTop: 0 }}>
+            Where you&apos;re nudged when you&apos;re on the clock and time is running down.
+          </p>
+          <EmailForm current={profile?.email ?? null} />
+        </section>
+      </div>
     </>
   );
 }
