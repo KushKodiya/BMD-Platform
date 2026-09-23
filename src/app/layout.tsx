@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getUserContext } from "@/lib/draft";
 import { signOut } from "./actions";
 import { ListIcon, LogOutIcon, SettingsIcon, UsersIcon } from "./_components/Icons";
+import TickerBanner from "./_components/TickerBanner";
 
 // Bebas Neue for the scoreboard voice, Source Sans 3 for everything readable.
 // next/font self-hosts both at build time -- no render-blocking Google request,
@@ -74,6 +75,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             )}
           </nav>
         </header>
+
+        <TickerBanner />
 
         <main>{children}</main>
 
