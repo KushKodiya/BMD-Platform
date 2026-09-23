@@ -3,7 +3,7 @@ import { describeLimit } from "@/lib/clock.mjs";
 import PickForm from "./_components/PickForm";
 import OnTheClock from "./_components/OnTheClock";
 import AvailablePlayers from "./_components/AvailablePlayers";
-import { ClockIcon, ListIcon, ShuffleIcon, TrophyIcon, UsersIcon } from "./_components/Icons";
+import { ClockIcon, CrownIcon, ListIcon, ShuffleIcon, TrophyIcon, UsersIcon } from "./_components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +16,7 @@ export default async function BoardPage() {
   const trades = await getPublicTrades(teams, players);
 
   const teamName = (id: string | null) => teams.find((t) => t.id === id)?.name ?? "—";
+  const championId = teams.find((t) => t.is_champion)?.id ?? null;
   const isMyTurn = !!myTeamId && myTeamId === onClockTeamId;
   const teamCount = orderedTeams.length || teams.length || 1;
   const round = Math.floor(draft.pick_count / teamCount) + 1;
@@ -59,6 +60,7 @@ export default async function BoardPage() {
             pickSeconds={draft.pick_seconds}
             pickIndex={draft.pick_count}
             isMyTurn={isMyTurn}
+            isChampion={onClockTeamId === championId}
           >
             {isMyTurn && available.length > 0 && <PickForm available={available} />}
           </OnTheClock>
@@ -130,8 +132,15 @@ export default async function BoardPage() {
                     <th
                       key={t.id}
                       scope="col"
-                      className={t.id === onClockTeamId ? "on-clock" : ""}
+                      className={[t.id === onClockTeamId ? "on-clock" : "", t.is_champion ? "champion" : ""]
+                        .filter(Boolean).join(" ")}
                     >
+                      {t.is_champion && (
+                        <>
+                          <CrownIcon size={13} className="crown" />
+                          <span className="sr-only">Defending champion: </span>
+                        </>
+                      )}
                       {t.name}
                     </th>
                   ))}
@@ -189,12 +198,29 @@ export default async function BoardPage() {
               return (
                 <article
                   key={t.id}
-                  className={`card card-hover roster-card reveal${t.id === onClockTeamId ? " is-on-clock" : ""}`}
+                  className={[
+                    "card card-hover roster-card reveal",
+                    t.id === onClockTeamId ? "is-on-clock" : "",
+                    t.is_champion ? "is-champion" : "",
+                  ].filter(Boolean).join(" ")}
                   style={{ ["--i" as string]: i }}
                 >
                   <div className="roster-head">
                     <span className="roster-seed" aria-hidden="true">{i + 1}</span>
-                    <span className="roster-name">{t.name}</span>
+                    <span className={`roster-name${t.is_champion ? " champion-text" : ""}`}>
+                      {t.is_champion && (
+                        <>
+                          <CrownIcon size={15} className="crown" />
+                          <span className="sr-only">Defending champion: </span>
+                        </>
+                      )}
+                      {t.name}
+                    </span>
+                    {t.is_champion && t.id !== onClockTeamId && t.id !== myTeamId && (
+                      <span className="badge badge-champion" style={{ marginLeft: "auto" }}>
+                        Champion
+                      </span>
+                    )}
                     {t.id === onClockTeamId && (
                       <span className="badge badge-live" style={{ marginLeft: "auto" }}>
                         <span className="dot" /> Now

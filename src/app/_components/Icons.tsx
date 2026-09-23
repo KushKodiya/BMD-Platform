@@ -15,6 +15,13 @@ const base = (size: number) => ({
   focusable: false,
 });
 
+export const CrownIcon = ({ size = 16, className }: IconProps) => (
+  <svg {...base(size)} className={className}>
+    <path d="M3 7l4.5 3.5L12 4l4.5 6.5L21 7l-1.8 11H4.8L3 7Z" />
+    <path d="M4.8 18h14.4" />
+  </svg>
+);
+
 export const ClockIcon = ({ size = 16, className }: IconProps) => (
   <svg {...base(size)} className={className}>
     <circle cx="12" cy="12" r="9" />

@@ -2,7 +2,7 @@ import { supabaseServer } from "@/lib/supabase/server";
 import { teamOnClock, totalRounds } from "@/lib/snake.mjs";
 import { deadlineMs } from "@/lib/clock.mjs";
 
-export type Team = { id: string; name: string; admin_id: string | null };
+export type Team = { id: string; name: string; admin_id: string | null; is_champion: boolean };
 export type Player = { id: string; name: string; year_in_school: string | null; major: string | null };
 export type Pick = { pick_index: number; team_id: string; player_id: string; auto: boolean };
 export type Draft = {
@@ -35,7 +35,7 @@ export async function getBoardState(): Promise<BoardState> {
   const [{ data: draftRow }, { data: teams }, { data: players }, { data: picks }, { data: dbNow }] =
     await Promise.all([
       db.from("draft").select("*").eq("id", 1).single(),
-      db.from("teams").select("id, name, admin_id"),
+      db.from("teams").select("id, name, admin_id, is_champion"),
       db.from("players").select("id, name, year_in_school, major").order("name"),
       db.from("picks").select("pick_index, team_id, player_id, auto").order("pick_index"),
       // Postgres' clock, not this server's: the countdown must be measured

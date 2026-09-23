@@ -11,6 +11,7 @@ drop function if exists auto_pick_if_expired(int) cascade;
 drop function if exists set_pick_seconds(int) cascade;
 drop function if exists board_time() cascade;
 drop function if exists set_my_team_name(text) cascade;
+drop function if exists set_champion_team(uuid) cascade;
 drop function if exists set_team_order(uuid[]) cascade;
 drop function if exists start_draft() cascade;
 drop function if exists update_my_email(text) cascade;

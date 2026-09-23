@@ -3,8 +3,9 @@ import { getBoardState, getUserContext } from "@/lib/draft";
 import AddPlayerForm from "../_components/AddPlayerForm";
 import OrderEditor from "../_components/OrderEditor";
 import PickTimerForm from "../_components/PickTimerForm";
+import ChampionPicker from "../_components/ChampionPicker";
 import { removePlayer } from "../actions";
-import { ClockIcon, LockIcon, SettingsIcon, XIcon } from "../_components/Icons";
+import { ClockIcon, CrownIcon, LockIcon, SettingsIcon, XIcon } from "../_components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -51,8 +52,17 @@ export default async function SetupPage() {
           )}
         </section>
 
-        {/* --- Player pool --- */}
+        {/* --- Defending champion: independent of draft status --- */}
         <section className="card reveal" style={{ ["--i" as string]: 1 }}>
+          <h2><CrownIcon size={19} /> Defending champion</h2>
+          <ChampionPicker
+            teams={teams}
+            current={teams.find((t) => t.is_champion)?.id ?? null}
+          />
+        </section>
+
+        {/* --- Player pool --- */}
+        <section className="card reveal" style={{ ["--i" as string]: 2 }}>
           <div className="section-head" style={{ marginBottom: "0.6rem" }}>
             <h2 style={{ margin: 0 }}>Player pool</h2>
             <span className="badge badge-soft">{players.length} players</span>
@@ -96,7 +106,7 @@ export default async function SetupPage() {
         </section>
 
         {/* --- Draft order --- */}
-        <section className="card reveal" style={{ ["--i" as string]: 2 }}>
+        <section className="card reveal" style={{ ["--i" as string]: 3 }}>
           <h2>Draft order</h2>
           {locked ? (
             <ol className="order-list">

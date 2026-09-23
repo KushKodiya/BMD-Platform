@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { autoPickIfExpired } from "../actions";
 import { formatRemaining, isUrgent } from "@/lib/clock.mjs";
-import { ClockIcon, ZapIcon } from "./Icons";
+import { ClockIcon, CrownIcon, ZapIcon } from "./Icons";
 
 type Props = {
   teamName: string;
@@ -15,6 +15,7 @@ type Props = {
   pickSeconds: number | null;
   pickIndex: number;       // the turn this clock is counting down
   isMyTurn: boolean;
+  isChampion?: boolean;       // defending champion -> gold instead of brand gradient
   children?: React.ReactNode; // the pick UI, shown when it's your turn
 };
 
@@ -37,7 +38,7 @@ const C = 2 * Math.PI * R;          // circumference, for stroke-dash math
  */
 export default function OnTheClock({
   teamName, round, pickNumber, totalPicks, deadline, serverNow,
-  pickSeconds, pickIndex, isMyTurn, children,
+  pickSeconds, pickIndex, isMyTurn, isChampion = false, children,
 }: Props) {
   const initial = deadline == null ? null : Math.max(0, deadline - serverNow);
   const [remaining, setRemaining] = useState<number | null>(initial);
@@ -115,7 +116,15 @@ export default function OnTheClock({
           On the clock · Round {round} · Pick {pickNumber} of {totalPicks}
         </p>
 
-        <h2 className="clock-team display-gradient">{teamName}</h2>
+        <h2 className={`clock-team ${isChampion ? "champion-text" : "display-gradient"}`}>
+          {isChampion && (
+            <>
+              <CrownIcon size={30} className="crown" />
+              <span className="sr-only">Defending champion: </span>
+            </>
+          )}
+          {teamName}
+        </h2>
 
         <div className="progress" role="presentation">
           <div className="progress-fill" style={{ width: `${pct}%` }} />
