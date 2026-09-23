@@ -37,6 +37,14 @@
   --text-muted: #b3a3d0;   /* ~8:1 on --bg */
   --text-dim: #8878a8;     /* ~5:1 on --bg - labels only, never body copy */
 
+  /* Defending champion. Gold reads as an award against the purple/red brand
+     without competing with the red urgency state, which never coincides with it
+     on the same element. */
+  --gold-300: #fff2c4;
+  --gold-400: #f3cf6b;
+  --gold-500: #e0ad2b;
+  --gold-600: #b8860b;
+
   --success: #34d399;
   --warning: #fbbf24;
 
@@ -44,6 +52,7 @@
   --grad-brand: linear-gradient(135deg, var(--purple-600) 0%, var(--red-600) 100%);
   --grad-hot: linear-gradient(135deg, var(--red-600) 0%, var(--red-400) 100%);
   --grad-text: linear-gradient(100deg, #fff 0%, var(--purple-300) 45%, #ff8da3 100%);
+  --grad-gold: linear-gradient(100deg, var(--gold-300) 0%, var(--gold-400) 45%, var(--gold-600) 100%);
   --ring: 0 0 0 3px rgba(157, 111, 224, 0.45);
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
   --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.45);
@@ -587,6 +596,54 @@ td.on-clock-col { background: rgba(157, 111, 224, 0.1); }
   margin-left: 0.3rem;
   vertical-align: -1px;
   color: var(--red-400);
+}
+
+/* ---------------------------------------------------------------------------
+   Defending champion (teams.is_champion) - last semester's winner, in gold
+   --------------------------------------------------------------------------- */
+.champion-text {
+  background: var(--grad-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* Fallback for the table header, where the team name sits on a gradient fill
+   while on the clock and clipped text would vanish. */
+.champion-plain { color: var(--gold-400); }
+
+.crown {
+  color: var(--gold-400);
+  vertical-align: -0.14em;
+  margin-right: 0.28rem;
+  flex: none;
+}
+
+.badge-champion {
+  background: var(--grad-gold);
+  color: #3a2a00;
+  border: none;
+}
+
+th.champion {
+  color: var(--gold-400);
+  box-shadow: inset 0 -2px 0 var(--gold-500);
+}
+/* On the clock AND champion: keep the brand gradient readable, mark it in gold
+   along the bottom edge rather than recolouring the text. */
+th.champion.on-clock {
+  color: #fff;
+  box-shadow: inset 0 -3px 0 var(--gold-400);
+}
+
+.roster-card.is-champion {
+  border-color: rgba(240, 193, 75, 0.55);
+  box-shadow: 0 0 0 1px rgba(240, 193, 75, 0.35), 0 10px 30px rgba(184, 134, 11, 0.18);
+}
+.roster-card.is-champion .roster-seed { background: var(--grad-gold); color: #3a2a00; }
+/* On the clock wins the outline - whose turn it is matters more right now. */
+.roster-card.is-champion.is-on-clock {
+  border-color: var(--red-400);
+  box-shadow: 0 0 0 1px var(--red-400), 0 10px 30px rgba(166, 25, 46, 0.3);
 }
 
 /* ---------------------------------------------------------------------------

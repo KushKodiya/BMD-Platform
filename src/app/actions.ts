@@ -61,6 +61,13 @@ export async function setPickSeconds(seconds: number | null): Promise<Result> {
   return ok();
 }
 
+// --- Owner setup: defending champion (RPC enforces owner) ---
+export async function setChampionTeam(teamId: string | null): Promise<Result> {
+  const { error } = await supabaseServer().rpc("set_champion_team", { p_team_id: teamId });
+  if (error) return { error: error.message };
+  return ok();
+}
+
 // --- Owner setup: player pool (RLS enforces owner + status=setup) ---
 export async function addPlayer(_prev: Result, form: FormData): Promise<Result> {
   const name = String(form.get("name") ?? "").trim();
