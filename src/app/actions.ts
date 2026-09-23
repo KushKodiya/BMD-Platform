@@ -61,6 +61,19 @@ export async function setPickSeconds(seconds: number | null): Promise<Result> {
   return ok();
 }
 
+// --- Owner: roster corrections (RPC enforces owner) ---
+// Puts p_in_player in p_out_player's pick slot. If the incoming player is
+// already drafted the two swap slots; otherwise the outgoing one returns to
+// the pool. The slot itself never moves -- see migration 0007.
+export async function replaceRosterPlayer(outPlayerId: string, inPlayerId: string): Promise<Result> {
+  const { error } = await supabaseServer().rpc("owner_replace_roster_player", {
+    p_out_player: outPlayerId,
+    p_in_player: inPlayerId,
+  });
+  if (error) return { error: error.message };
+  return ok();
+}
+
 // --- Owner setup: player pool (RLS enforces owner + status=setup) ---
 export async function addPlayer(_prev: Result, form: FormData): Promise<Result> {
   const name = String(form.get("name") ?? "").trim();

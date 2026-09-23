@@ -7,6 +7,7 @@ drop function if exists cancel_trade(uuid) cascade;
 drop function if exists team_owns_all(uuid, uuid[]) cascade;
 drop function if exists my_team_id() cascade;
 drop function if exists make_pick(uuid) cascade;
+drop function if exists owner_replace_roster_player(uuid, uuid) cascade;
 drop function if exists auto_pick_if_expired(int) cascade;
 drop function if exists set_pick_seconds(int) cascade;
 drop function if exists board_time() cascade;

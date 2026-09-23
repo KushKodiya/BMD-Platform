@@ -3,8 +3,9 @@ import { getBoardState, getUserContext } from "@/lib/draft";
 import AddPlayerForm from "../_components/AddPlayerForm";
 import OrderEditor from "../_components/OrderEditor";
 import PickTimerForm from "../_components/PickTimerForm";
+import RosterEditor from "../_components/RosterEditor";
 import { removePlayer } from "../actions";
-import { ClockIcon, LockIcon, SettingsIcon, XIcon } from "../_components/Icons";
+import { ClockIcon, LockIcon, SettingsIcon, UsersIcon, XIcon } from "../_components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export default async function SetupPage() {
   const { isOwner } = await getUserContext();
   if (!isOwner) redirect("/");
 
-  const { draft, teams, players } = await getBoardState();
+  const { draft, teams, players, orderedTeams, rosters, available } = await getBoardState();
   const locked = draft.status !== "setup";
 
   return (
@@ -95,8 +96,20 @@ export default async function SetupPage() {
           )}
         </section>
 
+        {/* --- Roster corrections: only meaningful once picks exist --- */}
+        {locked && (
+          <section className="card reveal" style={{ ["--i" as string]: 2 }}>
+            <h2><UsersIcon size={19} /> Roster corrections</h2>
+            <RosterEditor
+              teams={orderedTeams.length ? orderedTeams : teams}
+              rosters={rosters}
+              available={available}
+            />
+          </section>
+        )}
+
         {/* --- Draft order --- */}
-        <section className="card reveal" style={{ ["--i" as string]: 2 }}>
+        <section className="card reveal" style={{ ["--i" as string]: 3 }}>
           <h2>Draft order</h2>
           {locked ? (
             <ol className="order-list">
