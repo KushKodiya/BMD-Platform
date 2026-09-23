@@ -239,6 +239,90 @@ main {
 .nav-link:hover::after { transform: scaleX(1); }
 
 /* ---------------------------------------------------------------------------
+   News ticker - site-wide feed strip under the header
+   --------------------------------------------------------------------------- */
+.ticker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+  padding-left: clamp(1rem, 3vw, 1.75rem);
+  border-bottom: 1px solid var(--border);
+  background:
+    linear-gradient(90deg, rgba(88, 44, 131, 0.38) 0%, rgba(166, 25, 46, 0.26) 100%),
+    rgba(10, 6, 18, 0.9);
+}
+
+.ticker-label {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--purple-300);
+}
+
+/* Fades the strip out at both edges so items enter and leave instead of being
+   chopped off by the overflow. */
+.ticker-viewport {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 2rem, #000 calc(100% - 2rem), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 2rem, #000 calc(100% - 2rem), transparent 100%);
+}
+
+.ticker-track {
+  display: inline-flex;
+  white-space: nowrap;
+  will-change: transform;
+  animation: ticker-scroll var(--ticker-duration, 40s) linear infinite;
+}
+/* Pause so a passing item can actually be read. */
+.ticker:hover .ticker-track,
+.ticker-track:focus-within { animation-play-state: paused; }
+
+.ticker-run { display: inline-flex; }
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0;
+  margin-right: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+/* Separator between items, not after the last visible one. */
+.ticker-item::after {
+  content: "";
+  width: 4px;
+  height: 4px;
+  margin-left: 1.5rem;
+  border-radius: 50%;
+  background: var(--purple-400);
+  opacity: 0.6;
+}
+.ticker-item strong { color: var(--text); font-weight: 700; }
+.ticker-icon { flex: none; color: var(--purple-300); }
+.ticker-points .ticker-icon { color: var(--gold-400, #f3cf6b); } /* gold lands with the champion branch */
+.ticker-stat .ticker-icon { color: var(--red-400); }
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (max-width: 720px) {
+  .ticker-label { font-size: 0.64rem; letter-spacing: 0.14em; }
+  .ticker-item { font-size: 0.8rem; }
+}
+
+/* ---------------------------------------------------------------------------
    Buttons & controls
    --------------------------------------------------------------------------- */
 button, input, select, textarea { font: inherit; }
@@ -839,4 +923,10 @@ h1 > svg, h2 > svg, h3 > svg, .eyebrow > svg, .muted > svg, .dim > svg {
   }
   .reveal { opacity: 1; }
   .clock-panel::after { display: none; }
+
+  /* The ticker would otherwise jump straight to the end of its marquee. Stop
+     it outright and let the reader scroll the strip themselves. */
+  .ticker-track { animation: none !important; }
+  .ticker-viewport { overflow-x: auto; }
+  .ticker-run-clone { display: none; }
 }

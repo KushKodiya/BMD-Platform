@@ -173,8 +173,10 @@ export type TradeFeedItem = {
 // exposes only accepted trades, so anonymous viewers can read this too. Names are
 // resolved from the teams/players the board already loaded.
 export async function getPublicTrades(
-  teams: Team[],
-  players: Player[],
+  // Only ids and names are read, so the ticker can pass a lighter projection
+  // than the full Team/Player rows the board loads.
+  teams: { id: string; name: string }[],
+  players: { id: string; name: string }[],
   limit = 20,
 ): Promise<TradeFeedItem[]> {
   const db = supabaseServer();
