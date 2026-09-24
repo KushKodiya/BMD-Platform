@@ -5,9 +5,10 @@ import AddPlayerForm from "../_components/AddPlayerForm";
 import OrderEditor from "../_components/OrderEditor";
 import PickTimerForm from "../_components/PickTimerForm";
 import ChampionPicker from "../_components/ChampionPicker";
+import RosterEditor from "../_components/RosterEditor";
 import SeasonControls from "../_components/SeasonControls";
 import { removePlayer } from "../actions";
-import { CalendarIcon, ClockIcon, CrownIcon, LockIcon, SettingsIcon, XIcon } from "../_components/Icons";
+import { CalendarIcon, ClockIcon, CrownIcon, LockIcon, SettingsIcon, UsersIcon, XIcon } from "../_components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export default async function SetupPage() {
   const { isOwner } = await getUserContext();
   if (!isOwner) redirect("/");
 
-  const { draft, teams, players } = await getBoardState();
+  const { draft, teams, players, orderedTeams, rosters, available } = await getBoardState();
   const { weeks, opened } = await getSeasonMeta();
   const locked = draft.status !== "setup";
 
@@ -138,6 +139,18 @@ export default async function SetupPage() {
             opened={[...opened]}
           />
         </section>
+
+        {/* --- Roster corrections: only meaningful once picks exist --- */}
+        {locked && (
+          <section className="card reveal" style={{ ["--i" as string]: 5 }}>
+            <h2><UsersIcon size={19} /> Roster corrections</h2>
+            <RosterEditor
+              teams={orderedTeams.length ? orderedTeams : teams}
+              rosters={rosters}
+              available={available}
+            />
+          </section>
+        )}
       </div>
     </>
   );
