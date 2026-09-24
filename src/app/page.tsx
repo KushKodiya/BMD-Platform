@@ -233,7 +233,7 @@ export default async function BoardPage() {
                   {roster.length > 0 ? (
                     <ol className="roster-list">
                       {roster.map((p, n) => (
-                        <li key={p.id} className={autoPickedIds.has(p.id) ? "auto-pick" : ""}>
+                        <li key={p.id}>
                           <span className="num">{n + 1}</span>
                           <span>{p.name}</span>
                         </li>
