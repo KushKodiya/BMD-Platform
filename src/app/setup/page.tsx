@@ -7,8 +7,8 @@ import PickTimerForm from "../_components/PickTimerForm";
 import ChampionPicker from "../_components/ChampionPicker";
 import RosterEditor from "../_components/RosterEditor";
 import SeasonControls from "../_components/SeasonControls";
-import { removePlayer } from "../actions";
-import { CalendarIcon, ClockIcon, CrownIcon, LockIcon, SettingsIcon, UsersIcon, XIcon } from "../_components/Icons";
+import RemovePlayerButton from "../_components/RemovePlayerButton";
+import { CalendarIcon, ClockIcon, CrownIcon, LockIcon, SettingsIcon, UsersIcon } from "../_components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +22,9 @@ export default async function SetupPage() {
   const { draft, teams, players, orderedTeams, rosters, available } = await getBoardState();
   const { weeks, opened } = await getSeasonMeta();
   const locked = draft.status !== "setup";
+  // Undrafted players may be pruned mid-draft; drafted ones are the RosterEditor's domain.
+  const availableIds = new Set(available.map((p) => p.id));
+  const canRemove = (id: string) => draft.status !== "complete" && (!locked || availableIds.has(id));
 
   return (
     <>
@@ -87,18 +90,7 @@ export default async function SetupPage() {
                       </span>
                     )}
                   </span>
-                  {!locked && (
-                    <form action={removePlayer} style={{ marginLeft: "auto" }}>
-                      <input type="hidden" name="id" value={p.id} />
-                      <button
-                        type="submit"
-                        className="btn-ghost btn-icon"
-                        aria-label={`Remove ${p.name} from the pool`}
-                      >
-                        <XIcon size={15} />
-                      </button>
-                    </form>
-                  )}
+                  {canRemove(p.id) && <RemovePlayerButton id={p.id} name={p.name} />}
                 </li>
               ))}
             </ul>

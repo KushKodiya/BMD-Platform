@@ -1,13 +1,12 @@
 {
-  "id": "session-1790037119602",
-  "startedAt": "2026-09-22T00:31:59.602Z",
+  "id": "session-1790275944871",
+  "startedAt": "2026-09-24T18:52:24.871Z",
   "cwd": "/Users/kushkodiya/Documents/coding/BMD-Platform",
   "context": {},
   "metrics": {
-    "edits": 58,
+    "edits": 15,
     "commands": 0,
     "tasks": 0,
     "errors": 0
-  },
-  "restoredAt": "2026-09-23T23:51:37.083Z"
+  }
 }

@@ -95,9 +95,16 @@ export async function addPlayer(_prev: Result, form: FormData): Promise<Result> 
   return ok();
 }
 
-export async function removePlayer(form: FormData): Promise<void> {
-  await supabaseServer().from("players").delete().eq("id", String(form.get("id")));
-  revalidatePath("/setup");
+// Removes an undrafted player from the pool. Allowed mid-draft now, so it goes
+// through the owner_remove_player RPC (owner + draft lock + refuses drafted +
+// completes the draft if the pool empties) rather than a raw delete. Shaped for
+// useFormState so the RPC's error (e.g. "already drafted") can surface.
+export async function removePlayer(_prev: Result, form: FormData): Promise<Result> {
+  const { error } = await supabaseServer().rpc("owner_remove_player", {
+    p_player: String(form.get("id")),
+  });
+  if (error) return { error: error.message };
+  return ok();
 }
 
 // --- Owner setup: draft order + start (RPCs enforce owner + setup) ---
