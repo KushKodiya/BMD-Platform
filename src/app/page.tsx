@@ -236,11 +236,6 @@ export default async function BoardPage() {
                         <li key={p.id} className={autoPickedIds.has(p.id) ? "auto-pick" : ""}>
                           <span className="num">{n + 1}</span>
                           <span>{p.name}</span>
-                          {autoPickedIds.has(p.id) && (
-                            <span className="auto-flag" title="Assigned by the clock">
-                              <ClockIcon size={12} />
-                            </span>
-                          )}
                         </li>
                       ))}
                     </ol>
