@@ -132,3 +132,34 @@ export const LockIcon = ({ size = 16, className }: IconProps) => (
     <path d="M8 10V7a4 4 0 0 1 8 0v3" />
   </svg>
 );
+
+export const CalendarIcon = ({ size = 16, className }: IconProps) => (
+  <svg {...base(size)} className={className}>
+    <rect x="3" y="5" width="18" height="16" rx="2" />
+    <path d="M3 9h18M8 3v4M16 3v4" />
+  </svg>
+);
+
+export const SwordsIcon = ({ size = 16, className }: IconProps) => (
+  <svg {...base(size)} className={className}>
+    <path d="M14.5 14.5 21 21m-6-4 3 3M3 3l7 7-2 2-7-7V3h3Zm18 0v3l-7 7-2-2 7-7h2ZM3 21l6.5-6.5m-6.5 3 3 3" />
+  </svg>
+);
+
+export const ChartIcon = ({ size = 16, className }: IconProps) => (
+  <svg {...base(size)} className={className}>
+    <path d="M3 3v18h18M8 17v-5M13 17V8M18 17v-8" />
+  </svg>
+);
+
+export const ChevronLeftIcon = ({ size = 16, className }: IconProps) => (
+  <svg {...base(size)} className={className}>
+    <path d="m15 18-6-6 6-6" />
+  </svg>
+);
+
+export const ChevronRightIcon = ({ size = 16, className }: IconProps) => (
+  <svg {...base(size)} className={className}>
+    <path d="m9 18 6-6-6-6" />
+  </svg>
+);

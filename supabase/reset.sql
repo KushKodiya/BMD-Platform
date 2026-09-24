@@ -1,6 +1,9 @@
 -- Drops everything this app created so 0001_init.sql can be re-applied cleanly.
 -- Safe only before you have real draft data — it deletes players, picks, teams,
 -- and profiles (auth.users are NOT touched; re-run setup-admins.mjs after).
+drop function if exists generate_schedule() cascade;
+drop function if exists open_week(int) cascade;
+drop function if exists set_player_score(int, uuid, numeric) cascade;
 drop function if exists propose_trade(uuid, uuid[], uuid[]) cascade;
 drop function if exists respond_trade(uuid, boolean) cascade;
 drop function if exists cancel_trade(uuid) cascade;
@@ -18,6 +21,11 @@ drop function if exists update_my_email(text) cascade;
 drop function if exists team_on_clock(int, uuid[]) cascade;
 drop function if exists is_owner() cascade;
 
+drop view if exists standings cascade;
+drop view if exists matchup_results cascade;
+drop view if exists team_week_scores cascade;
+drop table if exists player_week_scores cascade;
+drop table if exists season_matchups cascade;
 drop table if exists trades cascade;
 drop table if exists picks cascade;
 drop table if exists draft cascade;

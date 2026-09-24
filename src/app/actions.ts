@@ -113,6 +113,27 @@ export async function startDraft(): Promise<Result> {
   return ok();
 }
 
+// --- Owner: season schedule + opening weeks (RPCs enforce owner) ---
+const seasonOk = (): Result => {
+  revalidatePath("/setup");
+  revalidatePath("/schedule");
+  revalidatePath("/matchups");
+  revalidatePath("/standings");
+  return {};
+};
+
+export async function generateSchedule(): Promise<Result> {
+  const { error } = await supabaseServer().rpc("generate_schedule");
+  if (error) return { error: error.message };
+  return seasonOk();
+}
+
+export async function openWeek(week: number): Promise<Result> {
+  const { error } = await supabaseServer().rpc("open_week", { p_week: week });
+  if (error) return { error: error.message };
+  return seasonOk();
+}
+
 // --- Admin: own email only (RPC scopes to auth.uid()) ---
 export async function updateMyEmail(_prev: Result, form: FormData): Promise<Result> {
   const { error } = await supabaseServer().rpc("update_my_email", {

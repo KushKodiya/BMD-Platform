@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
 import { getBoardState, getUserContext } from "@/lib/draft";
+import { getSeasonMeta } from "@/lib/season";
 import AddPlayerForm from "../_components/AddPlayerForm";
 import OrderEditor from "../_components/OrderEditor";
 import PickTimerForm from "../_components/PickTimerForm";
 import ChampionPicker from "../_components/ChampionPicker";
+import SeasonControls from "../_components/SeasonControls";
 import { removePlayer } from "../actions";
-import { ClockIcon, CrownIcon, LockIcon, SettingsIcon, XIcon } from "../_components/Icons";
+import { CalendarIcon, ClockIcon, CrownIcon, LockIcon, SettingsIcon, XIcon } from "../_components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +19,7 @@ export default async function SetupPage() {
   if (!isOwner) redirect("/");
 
   const { draft, teams, players } = await getBoardState();
+  const { weeks, opened } = await getSeasonMeta();
   const locked = draft.status !== "setup";
 
   return (
@@ -124,6 +127,16 @@ export default async function SetupPage() {
               currentOrder={draft.team_order}
             />
           )}
+        </section>
+
+        {/* --- Season: schedule + opening weeks (available once the draft is done) --- */}
+        <section className="card reveal" style={{ ["--i" as string]: 4 }}>
+          <h2><CalendarIcon size={19} /> Season</h2>
+          <SeasonControls
+            draftComplete={draft.status === "complete"}
+            weeks={weeks}
+            opened={[...opened]}
+          />
         </section>
       </div>
     </>

@@ -952,6 +952,109 @@ h1 > svg, h2 > svg, h3 > svg, .eyebrow > svg, .muted > svg, .dim > svg {
 .pop { animation: pop-in 320ms var(--ease) both; }
 
 /* ---------------------------------------------------------------------------
+   Season: matchups, schedule, standings
+   --------------------------------------------------------------------------- */
+.nav { flex-wrap: wrap; }
+.nav-link.active { color: #fff; }
+.nav-link.active::after { transform: scaleX(1); }
+
+.is-disabled { opacity: 0.4; pointer-events: none; }
+
+.week-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+.week-pager-label { font-weight: 700; font-size: 1.05rem; }
+
+/* Schedule rows */
+.matchup-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.schedule-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1rem;
+}
+.schedule-team { font-weight: 600; }
+.schedule-team-right { text-align: right; }
+.schedule-vs {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Matchup cards (fantasy-style head-to-head) */
+.matchup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+.matchup-head {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.matchup-team-head { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.matchup-team-head-right { justify-content: flex-end; text-align: right; }
+.matchup-team-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.matchup-team-total {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.7rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.matchup-team-head.is-winner .matchup-team-name { color: #fff; }
+.matchup-team-head.is-winner .matchup-team-total { color: var(--success); }
+.matchup-mid {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.matchup-rosters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1.25rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.6rem;
+}
+.matchup-side { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.matchup-side li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.28rem 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(157, 111, 224, 0.08);
+}
+.matchup-side-right { text-align: right; }
+.mp-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-pts { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text-muted); }
+.matchup-result {
+  margin-top: 0.75rem;
+  text-align: center;
+  font-weight: 700;
+  color: var(--success);
+}
+.matchup-bonus { color: var(--gold-400); }
+
+/* ---------------------------------------------------------------------------
    Responsive - checked at 375 / 768 / 1024 / 1440
    --------------------------------------------------------------------------- */
 @media (max-width: 720px) {

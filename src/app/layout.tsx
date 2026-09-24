@@ -3,8 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Bebas_Neue, Source_Sans_3 } from "next/font/google";
 import Link from "next/link";
 import { getUserContext } from "@/lib/draft";
-import { signOut } from "./actions";
-import { ListIcon, LogOutIcon, SettingsIcon, UsersIcon } from "./_components/Icons";
+import MainNav from "./_components/MainNav";
 import TickerBanner from "./_components/TickerBanner";
 
 // Bebas Neue for the scoreboard voice, Source Sans 3 for everything readable.
@@ -50,30 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
           <span style={{ flex: 1 }} />
 
-          <nav className="nav" aria-label="Main">
-            <Link href="/" className="nav-link">
-              <ListIcon size={14} /> Board
-            </Link>
-            {isOwner && (
-              <Link href="/setup" className="nav-link">
-                <SettingsIcon size={14} /> Setup
-              </Link>
-            )}
-            {myTeamId && (
-              <Link href="/account" className="nav-link">
-                <UsersIcon size={14} /> My team
-              </Link>
-            )}
-            {userId ? (
-              <form action={signOut}>
-                <button type="submit" className="btn-ghost btn-sm">
-                  <LogOutIcon size={14} /> Sign out
-                </button>
-              </form>
-            ) : (
-              <Link href="/login" className="nav-link">Sign in</Link>
-            )}
-          </nav>
+          <MainNav userId={userId} isOwner={isOwner} myTeamId={myTeamId} />
         </header>
 
         <TickerBanner />
