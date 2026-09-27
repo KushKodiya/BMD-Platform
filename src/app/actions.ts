@@ -106,6 +106,29 @@ export async function addMember(
   return {};
 }
 
+// --- Owner: edit a player's name / year / team (RPC enforces owner) ---
+export async function updatePlayer(
+  playerId: string,
+  name: string,
+  year: string,
+  teamId: string,
+): Promise<Result> {
+  if (!playerId) return { error: "Pick a player." };
+  if (!name.trim()) return { error: "Name is required." };
+  const { error } = await supabaseServer().rpc("owner_update_player", {
+    p_player: playerId,
+    p_name: name,
+    p_year: year,
+    p_team: teamId || null,
+  });
+  if (error) return { error: error.message };
+  revalidatePath("/");
+  revalidatePath("/setup");
+  revalidatePath("/players");
+  revalidatePath("/matchups");
+  return {};
+}
+
 // --- Owner setup: player pool (RLS enforces owner + status=setup) ---
 export async function addPlayer(_prev: Result, form: FormData): Promise<Result> {
   const name = String(form.get("name") ?? "").trim();

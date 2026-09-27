@@ -7,6 +7,7 @@ import PickTimerForm from "../_components/PickTimerForm";
 import ChampionPicker from "../_components/ChampionPicker";
 import RosterEditor from "../_components/RosterEditor";
 import AddMemberForm from "../_components/AddMemberForm";
+import PlayerEditor from "../_components/PlayerEditor";
 import SeasonControls from "../_components/SeasonControls";
 import RemovePlayerButton from "../_components/RemovePlayerButton";
 import { CalendarIcon, ClockIcon, CrownIcon, LockIcon, SettingsIcon, UsersIcon } from "../_components/Icons";
@@ -26,6 +27,18 @@ export default async function SetupPage() {
   // Undrafted players may be pruned mid-draft; drafted ones are the RosterEditor's domain.
   const availableIds = new Set(available.map((p) => p.id));
   const canRemove = (id: string) => draft.status !== "complete" && (!locked || availableIds.has(id));
+
+  // Player records (with current team) for the owner's name/year/team editor.
+  const teamOf = new Map<string, string>();
+  for (const [tid, roster] of Object.entries(rosters)) {
+    for (const pl of roster) teamOf.set(pl.id, tid);
+  }
+  const playerRecords = players.map((p) => ({
+    id: p.id,
+    name: p.name,
+    year: p.year_in_school ?? "",
+    teamId: teamOf.get(p.id) ?? null,
+  }));
 
   return (
     <>
@@ -149,6 +162,17 @@ export default async function SetupPage() {
           <section className="card reveal" style={{ ["--i" as string]: 6 }}>
             <h2><UsersIcon size={19} /> Add a member</h2>
             <AddMemberForm teams={orderedTeams.length ? orderedTeams : teams} />
+          </section>
+        )}
+
+        {/* --- Edit a player's name, year, or team --- */}
+        {locked && players.length > 0 && (
+          <section className="card reveal" style={{ ["--i" as string]: 7 }}>
+            <h2><UsersIcon size={19} /> Edit players</h2>
+            <PlayerEditor
+              players={playerRecords}
+              teams={orderedTeams.length ? orderedTeams : teams}
+            />
           </section>
         )}
       </div>
