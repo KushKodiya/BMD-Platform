@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getUserContext } from "@/lib/draft";
 import { getSeasonMeta } from "@/lib/season";
 import { supabaseServer } from "@/lib/supabase/server";
+import { openWeek } from "@/lib/week.mjs";
 import { CATEGORY_LABELS } from "@/lib/scoring.mjs";
 import ScoreEntryForm, { type RecentEntry } from "../_components/ScoreEntryForm";
 import { PlusIcon } from "../_components/Icons";
@@ -52,7 +53,7 @@ export default async function ScoresPage() {
             <p style={{ margin: 0 }}>No schedule yet — the owner generates it after the draft.</p>
           </div>
         ) : (
-          <ScoreEntryForm players={playerList} weeks={weeks} recent={recent} />
+          <ScoreEntryForm players={playerList} openWeek={openWeek(weeks)} recent={recent} />
         )}
       </section>
     </>

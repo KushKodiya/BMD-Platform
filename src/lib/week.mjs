@@ -49,6 +49,17 @@ export function weekRangeLabel(week) {
   return `${fmt(start)} – ${fmt(end)}`;
 }
 
+/** The single week open for scoring right now: the current ET week when it is
+ *  one of the scheduled weeks, else null (before the season starts or after it
+ *  ends). Exactly one week is ever open -- it opens at its Sunday 00:00 ET start
+ *  and closes at Saturday 23:59 ET when the clock rolls to the next week, with no
+ *  manual step, because it is derived from the current time on every read. */
+export function openWeek(weeks, now = new Date()) {
+  if (!weeks || weeks.length === 0) return null;
+  const cur = currentWeek(now);
+  return weeks.includes(cur) ? cur : null;
+}
+
 /** The week to show by default: the current ET week, clamped into the weeks the
  *  schedule actually spans (before the season -> first week, after -> last). */
 export function defaultWeek(weeks, now = new Date()) {

@@ -53,7 +53,7 @@ export default async function MatchupsPage({
         <WeekPager base="/matchups" week={week} weeks={weeks} />
         {!board.opened && (
           <p className="dim" style={{ marginTop: "0.6rem" }}>
-            This week isn&apos;t open yet — scores post once the owner opens it.
+            No scores yet — they post as moderators enter points during the live week.
           </p>
         )}
       </div>

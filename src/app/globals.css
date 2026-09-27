@@ -968,6 +968,26 @@ h1 > svg, h2 > svg, h3 > svg, .eyebrow > svg, .muted > svg, .dim > svg {
 }
 .week-pager-label { font-weight: 700; font-size: 1.05rem; text-align: center; }
 .week-pager-dates { display: block; font-weight: 500; font-size: 0.8rem; }
+.week-pager-live {
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #04110a;
+  background: var(--success);
+}
+
+.week-locked {
+  padding: 0.5rem 0.7rem;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
 
 /* Schedule rows */
 .matchup-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }

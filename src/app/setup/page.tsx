@@ -6,6 +6,7 @@ import OrderEditor from "../_components/OrderEditor";
 import PickTimerForm from "../_components/PickTimerForm";
 import ChampionPicker from "../_components/ChampionPicker";
 import RosterEditor from "../_components/RosterEditor";
+import AddMemberForm from "../_components/AddMemberForm";
 import SeasonControls from "../_components/SeasonControls";
 import RemovePlayerButton from "../_components/RemovePlayerButton";
 import { CalendarIcon, ClockIcon, CrownIcon, LockIcon, SettingsIcon, UsersIcon } from "../_components/Icons";
@@ -140,6 +141,14 @@ export default async function SetupPage() {
               rosters={rosters}
               available={available}
             />
+          </section>
+        )}
+
+        {/* --- Add a member: only after the draft, when appending a pick is safe --- */}
+        {draft.status === "complete" && (
+          <section className="card reveal" style={{ ["--i" as string]: 6 }}>
+            <h2><UsersIcon size={19} /> Add a member</h2>
+            <AddMemberForm teams={orderedTeams.length ? orderedTeams : teams} />
           </section>
         )}
       </div>

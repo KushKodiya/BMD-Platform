@@ -6,6 +6,7 @@ drop function if exists open_week(int) cascade;
 drop function if exists set_player_score(int, uuid, numeric) cascade;
 drop function if exists mod_add_score(uuid, text, numeric, int) cascade;
 drop function if exists mod_delete_score(uuid) cascade;
+drop function if exists owner_add_member(text, text, text, uuid) cascade;
 drop function if exists is_moderator() cascade;
 drop function if exists propose_trade(uuid, uuid[], uuid[]) cascade;
 drop function if exists respond_trade(uuid, boolean) cascade;

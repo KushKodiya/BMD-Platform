@@ -2,6 +2,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { addScore, deleteScore } from "../actions";
 import { WEEKLY_ACTIVITIES, SEASON_ACTIVITIES } from "@/lib/scoring.mjs";
+import { weekRangeLabel } from "@/lib/week.mjs";
 import { PlusIcon, XIcon } from "./Icons";
 
 export type RecentEntry = {
@@ -17,14 +18,15 @@ type Activity = { key: string; label: string; category: string; points: number }
 
 const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
 
-// Moderator entry surface. Two modes: weekly matchup points (need a week) and
-// exam/IM points (season-direct, no week). Picking an activity pre-fills its
-// point value, which the moderator can still override.
+// Moderator entry surface. Two modes: weekly matchup points and exam/IM points
+// (season-direct, no week). Weekly points can only be logged for the one week
+// open right now (openWeek); exam/IM points are always open. Picking an activity
+// pre-fills its point value, which the moderator can still override.
 export default function ScoreEntryForm({
-  players, weeks, recent,
+  players, openWeek, recent,
 }: {
   players: Player[];
-  weeks: number[];
+  openWeek: number | null;
   recent: RecentEntry[];
 }) {
   const [mode, setMode] = useState<"weekly" | "season">("weekly");
@@ -33,9 +35,10 @@ export default function ScoreEntryForm({
   const [playerId, setPlayerId] = useState("");
   const [activityKey, setActivityKey] = useState(activities[0].key);
   const [points, setPoints] = useState(String(activities[0].points));
-  const [week, setWeek] = useState(weeks[0]);
   const [error, setError] = useState<string | undefined>();
   const [pending, start] = useTransition();
+
+  const weekClosed = mode === "weekly" && openWeek == null;
 
   const activity = useMemo(
     () => activities.find((a) => a.key === activityKey) ?? activities[0],
@@ -60,7 +63,7 @@ export default function ScoreEntryForm({
     setError(undefined);
     const value = Number(points);
     start(async () => {
-      const res = await addScore(playerId, activity.category, value, mode === "weekly" ? week : null);
+      const res = await addScore(playerId, activity.category, value, mode === "weekly" ? openWeek : null);
       if (res.error) setError(res.error);
       else setPoints(String(activity.points)); // reset for the next quick entry
     });
@@ -109,13 +112,13 @@ export default function ScoreEntryForm({
           </div>
 
           {mode === "weekly" && (
-            <div className="field" style={{ flex: "0 1 7rem" }}>
-              <label htmlFor="s-week">Week</label>
-              <select id="s-week" value={week} onChange={(e) => setWeek(Number(e.target.value))}>
-                {weeks.map((w) => (
-                  <option key={w} value={w}>Week {w}</option>
-                ))}
-              </select>
+            <div className="field" style={{ flex: "1 1 10rem" }}>
+              <label>Open week</label>
+              <div className="week-locked">
+                {openWeek != null
+                  ? `Week ${openWeek} · ${weekRangeLabel(openWeek)}`
+                  : "No week is open right now"}
+              </div>
             </div>
           )}
 
@@ -130,10 +133,21 @@ export default function ScoreEntryForm({
             />
           </div>
 
-          <button type="button" className="btn-primary" onClick={submit} disabled={pending || !playerId}>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={submit}
+            disabled={pending || !playerId || weekClosed}
+          >
             <PlusIcon size={15} /> {pending ? "Saving…" : "Add points"}
           </button>
         </div>
+        {weekClosed && (
+          <p className="muted" style={{ margin: 0 }}>
+            No week is open for weekly scoring right now. Weekly points can only be entered during
+            the live week (Sunday–Saturday, Eastern). Exam/IM points can still be entered.
+          </p>
+        )}
         {error && <p className="error" role="alert">{error}</p>}
       </div>
 

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { currentWeek, weekForDate, etDate, weekRangeLabel, defaultWeek } from "./week.mjs";
+import { currentWeek, weekForDate, etDate, weekRangeLabel, defaultWeek, openWeek } from "./week.mjs";
 
 // Week 1 = Sun 2026-09-27 .. Sat 2026-10-03, Eastern Time.
 test("week 1 covers Sun Sep 27 through Sat Oct 3", () => {
@@ -27,6 +27,15 @@ test("DST does not drift the boundary (Nov 1 2026 fall-back)", () => {
 test("range label reads Sun..Sat", () => {
   assert.equal(weekRangeLabel(1), "Sep 27 – Oct 3");
   assert.equal(weekRangeLabel(2), "Oct 4 – Oct 10");
+});
+
+test("openWeek is exactly the current week, or null off-season", () => {
+  const weeks = [1, 2, 3];
+  assert.equal(openWeek(weeks, new Date("2026-09-27T12:00:00Z")), 1); // week 1 live
+  assert.equal(openWeek(weeks, new Date("2026-10-06T12:00:00Z")), 2); // week 2 live
+  assert.equal(openWeek(weeks, new Date("2026-09-20T12:00:00Z")), null); // before season
+  assert.equal(openWeek(weeks, new Date("2027-01-01T12:00:00Z")), null); // after last week
+  assert.equal(openWeek([], new Date("2026-09-27T12:00:00Z")), null); // no schedule
 });
 
 test("defaultWeek clamps into the scheduled weeks", () => {
