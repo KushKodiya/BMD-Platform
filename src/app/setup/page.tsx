@@ -20,7 +20,7 @@ export default async function SetupPage() {
   if (!isOwner) redirect("/");
 
   const { draft, teams, players, orderedTeams, rosters, available } = await getBoardState();
-  const { weeks, opened } = await getSeasonMeta();
+  const { weeks } = await getSeasonMeta();
   const locked = draft.status !== "setup";
   // Undrafted players may be pruned mid-draft; drafted ones are the RosterEditor's domain.
   const availableIds = new Set(available.map((p) => p.id));
@@ -122,13 +122,12 @@ export default async function SetupPage() {
           )}
         </section>
 
-        {/* --- Season: schedule + opening weeks (available once the draft is done) --- */}
+        {/* --- Season: generate the schedule once the draft is done --- */}
         <section className="card reveal" style={{ ["--i" as string]: 4 }}>
           <h2><CalendarIcon size={19} /> Season</h2>
           <SeasonControls
             draftComplete={draft.status === "complete"}
-            weeks={weeks}
-            opened={[...opened]}
+            scheduled={weeks.length > 0}
           />
         </section>
 

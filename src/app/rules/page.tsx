@@ -1,14 +1,7 @@
+import { ACTIVITIES } from "@/lib/scoring.mjs";
 import { BookIcon } from "../_components/Icons";
 
-// Static rules reference. Scoring values come from the league's scoring sheet.
-const SCORING: { activity: string; points: number }[] = [
-  { activity: "A on Exam", points: 2 },
-  { activity: "B on Exam", points: 1 },
-  { activity: "Office Hours/job related to your career", points: 0.4 },
-  { activity: "Studying with brother(s)", points: 0.2 },
-  { activity: "Workout", points: 0.2 },
-  { activity: "IM Sport Enrollment", points: 3 },
-];
+const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
 
 export default function RulesPage() {
   return (
@@ -33,10 +26,10 @@ export default function RulesPage() {
               </tr>
             </thead>
             <tbody>
-              {SCORING.map((row) => (
-                <tr key={row.activity}>
-                  <td style={{ textAlign: "left" }}>{row.activity}</td>
-                  <td><strong>{row.points}</strong></td>
+              {ACTIVITIES.map((row) => (
+                <tr key={row.key}>
+                  <td style={{ textAlign: "left" }}>{row.label}</td>
+                  <td><strong>{fmt(row.points)}</strong></td>
                 </tr>
               ))}
             </tbody>

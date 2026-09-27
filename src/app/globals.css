@@ -1111,6 +1111,19 @@ h1 > svg, h2 > svg, h3 > svg, .eyebrow > svg, .muted > svg, .dim > svg {
 .scorer-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .scorer-pts { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--success); }
 
+.entry-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.entry-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.entry-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entry-pts { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--success); }
+
 /* ---------------------------------------------------------------------------
    Responsive - checked at 375 / 768 / 1024 / 1440
    --------------------------------------------------------------------------- */

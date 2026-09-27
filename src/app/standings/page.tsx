@@ -33,7 +33,8 @@ export default async function StandingsPage() {
         <p className="eyebrow"><ChartIcon size={13} /> Season</p>
         <h1 className="display-gradient">Standings</h1>
         <p className="muted" style={{ margin: 0 }}>
-          Season points = sum of weekly averages + 25 per week won. Updates live as scores come in.
+          Season points = weekly averages + exam/IM points (per member) + 25 per week won.
+          Updates live as moderators enter scores.
         </p>
       </header>
 
@@ -47,6 +48,7 @@ export default async function StandingsPage() {
                 <th scope="col" style={{ textAlign: "left" }}>Team</th>
                 <th scope="col">Wins</th>
                 <th scope="col">From play</th>
+                <th scope="col">Exam/IM</th>
                 <th scope="col">Points</th>
               </tr>
             </thead>
@@ -67,6 +69,7 @@ export default async function StandingsPage() {
                   </td>
                   <td>{row.wins}</td>
                   <td className="dim">{fmt(row.pointsFromPlay)}</td>
+                  <td className="dim">{fmt(row.directPoints)}</td>
                   <td><strong>{fmt(row.seasonPoints)}</strong></td>
                 </tr>
               ))}

@@ -81,6 +81,28 @@ export async function replaceRosterPlayer(outPlayerId: string, inPlayerId: strin
   return ok();
 }
 
+// --- Owner: add a person to a team after the draft (RPC enforces owner + complete) ---
+export async function addMember(
+  name: string,
+  year: string,
+  major: string,
+  teamId: string,
+): Promise<Result> {
+  if (!name.trim()) return { error: "Name is required." };
+  if (!teamId) return { error: "Pick a team." };
+  const { error } = await supabaseServer().rpc("owner_add_member", {
+    p_name: name,
+    p_year: year,
+    p_major: major,
+    p_team: teamId,
+  });
+  if (error) return { error: error.message };
+  revalidatePath("/");
+  revalidatePath("/setup");
+  revalidatePath("/players");
+  return {};
+}
+
 // --- Owner setup: player pool (RLS enforces owner + status=setup) ---
 export async function addPlayer(_prev: Result, form: FormData): Promise<Result> {
   const name = String(form.get("name") ?? "").trim();
@@ -148,10 +170,37 @@ export async function generateSchedule(): Promise<Result> {
   return seasonOk();
 }
 
-export async function openWeek(week: number): Promise<Result> {
-  const { error } = await supabaseServer().rpc("open_week", { p_week: week });
+// --- Moderators: enter / remove score entries (RPC enforces moderator role) ---
+const scoresOk = (): Result => {
+  revalidatePath("/scores");
+  revalidatePath("/matchups");
+  revalidatePath("/standings");
+  revalidatePath("/players");
+  return {};
+};
+
+export async function addScore(
+  playerId: string,
+  category: string,
+  points: number,
+  week: number | null,
+): Promise<Result> {
+  if (!playerId) return { error: "Pick a player." };
+  if (!Number.isFinite(points)) return { error: "Enter a point value." };
+  const { error } = await supabaseServer().rpc("mod_add_score", {
+    p_player: playerId,
+    p_category: category,
+    p_points: points,
+    p_week: week,
+  });
   if (error) return { error: error.message };
-  return seasonOk();
+  return scoresOk();
+}
+
+export async function deleteScore(entryId: string): Promise<Result> {
+  const { error } = await supabaseServer().rpc("mod_delete_score", { p_entry: entryId });
+  if (error) return { error: error.message };
+  return scoresOk();
 }
 
 // --- Admin: own email only (RPC scopes to auth.uid()) ---

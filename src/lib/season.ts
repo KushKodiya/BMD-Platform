@@ -38,19 +38,19 @@ export type StandingRow = {
   isChampion: boolean;
   seasonPoints: number;
   pointsFromPlay: number;
+  directPoints: number;
   wins: number;
 };
 
 type TeamRow = { id: string; name: string; is_champion: boolean };
 type MatchupRow = { week: number; home_team_id: string; away_team_id: string };
-type ScoreRow = { week: number; player_id: string; team_id: string; points: number };
 
-// The weeks the schedule spans, and which have been opened (have a snapshot).
+// The weeks the schedule spans, and which have been scored (have any entries).
 export async function getSeasonMeta(): Promise<{ weeks: number[]; opened: Set<number> }> {
   const db = supabaseServer();
   const [{ data: m }, { data: s }] = await Promise.all([
     db.from("season_matchups").select("week"),
-    db.from("player_week_scores").select("week"),
+    db.from("score_entries").select("week").not("week", "is", null),
   ]);
   const weeks = [...new Set(((m ?? []) as { week: number }[]).map((r) => r.week))].sort(
     (a, b) => a - b,
@@ -65,7 +65,7 @@ export async function getSchedule(): Promise<ScheduleWeek[]> {
   const [{ data: matchups }, { data: teams }, { data: scored }] = await Promise.all([
     db.from("season_matchups").select("week, home_team_id, away_team_id").order("week"),
     db.from("teams").select("id, name, is_champion"),
-    db.from("player_week_scores").select("week"),
+    db.from("score_entries").select("week").not("week", "is", null),
   ]);
   const teamList = (teams ?? []) as TeamRow[];
   const name = new Map(teamList.map((t) => [t.id, t.name]));
@@ -94,16 +94,21 @@ export async function getSchedule(): Promise<ScheduleWeek[]> {
   return [...byWeek.values()].sort((a, b) => a.week - b.week);
 }
 
-// One week's matchups, each team's snapshot players with their scores, totals,
-// and the winner. Returns null if the week has no schedule.
+// One week's matchups: each team's current roster with their weekly-category
+// points, the team's per-member weekly average, and the winner. Returns null if
+// the week has no schedule.
 export async function getWeekBoard(week: number): Promise<WeekBoard | null> {
   const db = supabaseServer();
-  const [{ data: matchups }, { data: teams }, { data: players }, { data: scores }] =
+  const [{ data: matchups }, { data: teams }, { data: players }, { data: picks }, { data: entries }, { data: teamWeek }] =
     await Promise.all([
       db.from("season_matchups").select("week, home_team_id, away_team_id").eq("week", week),
       db.from("teams").select("id, name, is_champion"),
       db.from("players").select("id, name"),
-      db.from("player_week_scores").select("week, player_id, team_id, points").eq("week", week),
+      db.from("picks").select("player_id, team_id"),
+      // Only the weekly-matchup categories count toward a matchup.
+      db.from("score_entries").select("player_id, points")
+        .eq("week", week).in("category", ["office_hours", "studying", "workout"]),
+      db.from("team_week_scores").select("team_id, avg_points").eq("week", week),
     ]);
   const matchupRows = (matchups ?? []) as MatchupRow[];
   if (matchupRows.length === 0) return null;
@@ -111,22 +116,32 @@ export async function getWeekBoard(week: number): Promise<WeekBoard | null> {
   const teamList = (teams ?? []) as TeamRow[];
   const teamById = new Map(teamList.map((t) => [t.id, t]));
   const playerName = new Map(((players ?? []) as { id: string; name: string }[]).map((p) => [p.id, p.name]));
-  const scoreRows = (scores ?? []) as ScoreRow[];
-  const opened = scoreRows.length > 0;
 
-  const byTeam = new Map<string, MatchupPlayer[]>();
-  for (const s of scoreRows) {
-    const arr = byTeam.get(s.team_id) ?? [];
-    arr.push({ id: s.player_id, name: playerName.get(s.player_id) ?? "—", points: Number(s.points) });
-    byTeam.set(s.team_id, arr);
+  // Per-player weekly points this week (0 if unscored).
+  const pointsByPlayer = new Map<string, number>();
+  for (const e of (entries ?? []) as { player_id: string; points: number }[]) {
+    pointsByPlayer.set(e.player_id, (pointsByPlayer.get(e.player_id) ?? 0) + Number(e.points));
   }
+  // Team rosters from the draft.
+  const rosterByTeam = new Map<string, string[]>();
+  for (const pk of (picks ?? []) as { player_id: string; team_id: string }[]) {
+    const arr = rosterByTeam.get(pk.team_id) ?? [];
+    arr.push(pk.player_id);
+    rosterByTeam.set(pk.team_id, arr);
+  }
+  // Team per-member average from the view (null until the week is scored).
+  const avgByTeam = new Map<string, number>();
+  for (const r of (teamWeek ?? []) as { team_id: string; avg_points: number }[]) {
+    avgByTeam.set(r.team_id, Number(r.avg_points));
+  }
+  const opened = (entries ?? []).length > 0;
 
   const teamView = (id: string): MatchupTeam => {
     const t = teamById.get(id);
-    const roster = (byTeam.get(id) ?? []).slice().sort((a, b) => b.points - a.points);
-    const total = roster.length
-      ? roster.reduce((sum, p) => sum + p.points, 0) / roster.length
-      : null;
+    const roster: MatchupPlayer[] = (rosterByTeam.get(id) ?? [])
+      .map((pid) => ({ id: pid, name: playerName.get(pid) ?? "—", points: pointsByPlayer.get(pid) ?? 0 }))
+      .sort((a, b) => b.points - a.points);
+    const total = avgByTeam.has(id) ? avgByTeam.get(id)! : null;
     return { teamId: id, name: t?.name ?? "—", isChampion: !!t?.is_champion, players: roster, total };
   };
 
@@ -154,25 +169,49 @@ export async function getWeekBoard(week: number): Promise<WeekBoard | null> {
 
 export type TopScorer = { playerId: string; name: string; points: number };
 
-// The highest individual point scorers of the season: each player's points
-// summed across every opened week. Same source as the rest of the season points
-// (player_week_scores, filled by the spreadsheet import). Aggregated here since
-// the dataset (players x weeks) is small.
+// The highest individual point scorers: each player's total across every
+// category, straight from the player_totals view.
 export async function getTopScorers(limit = 5): Promise<TopScorer[]> {
   const db = supabaseServer();
-  const [{ data: scores }, { data: players }] = await Promise.all([
-    db.from("player_week_scores").select("player_id, points"),
-    db.from("players").select("id, name"),
+  const { data } = await db
+    .from("player_totals")
+    .select("player_id, name, total_points")
+    .order("total_points", { ascending: false })
+    .order("name")
+    .limit(limit);
+  return ((data ?? []) as { player_id: string; name: string; total_points: number }[]).map((r) => ({
+    playerId: r.player_id,
+    name: r.name,
+    points: Number(r.total_points),
+  }));
+}
+
+export type PlayerSeason = {
+  playerId: string;
+  name: string;
+  totalPoints: number;   // sum of every point earned, all categories
+  weeklyAverage: number; // weekly-category points / weeks scored so far
+};
+
+// Every player with their season total and weekly average, sorted most points
+// first. Weekly average uses only the matchup categories (office hours /
+// studying / workout) over the number of weeks that have been scored.
+export async function getPlayers(): Promise<PlayerSeason[]> {
+  const db = supabaseServer();
+  const [{ data: totals }, { data: weeks }] = await Promise.all([
+    db.from("player_totals").select("player_id, name, total_points, weekly_points"),
+    db.from("score_entries").select("week").not("week", "is", null),
   ]);
-  const name = new Map(((players ?? []) as { id: string; name: string }[]).map((p) => [p.id, p.name]));
-  const total = new Map<string, number>();
-  for (const s of (scores ?? []) as { player_id: string; points: number }[]) {
-    total.set(s.player_id, (total.get(s.player_id) ?? 0) + Number(s.points));
-  }
-  return [...total.entries()]
-    .map(([playerId, points]) => ({ playerId, name: name.get(playerId) ?? "—", points }))
-    .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name))
-    .slice(0, limit);
+  const openedWeeks = new Set(((weeks ?? []) as { week: number }[]).map((r) => r.week)).size;
+  const denom = Math.max(1, openedWeeks);
+  return ((totals ?? []) as { player_id: string; name: string; total_points: number; weekly_points: number }[])
+    .map((r) => ({
+      playerId: r.player_id,
+      name: r.name,
+      totalPoints: Number(r.total_points),
+      weeklyAverage: Number(r.weekly_points) / denom,
+    }))
+    .sort((a, b) => b.totalPoints - a.totalPoints || a.name.localeCompare(b.name));
 }
 
 // Standings ranked by season points (ties broken by name). Reads the derived view.
@@ -181,7 +220,7 @@ export async function getStandings(): Promise<StandingRow[]> {
   const { data } = await db.from("standings").select("*");
   type Row = {
     team_id: string; name: string; is_champion: boolean;
-    season_points: number; points_from_play: number; wins: number;
+    season_points: number; points_from_play: number; direct_points: number; wins: number;
   };
   return ((data ?? []) as Row[])
     .map((r) => ({
@@ -190,6 +229,7 @@ export async function getStandings(): Promise<StandingRow[]> {
       isChampion: r.is_champion,
       seasonPoints: Number(r.season_points),
       pointsFromPlay: Number(r.points_from_play),
+      directPoints: Number(r.direct_points),
       wins: Number(r.wins),
     }))
     .sort((a, b) => b.seasonPoints - a.seasonPoints || a.name.localeCompare(b.name));

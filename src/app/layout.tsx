@@ -33,7 +33,7 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const { userId, isOwner, myTeamId } = await getUserContext();
+  const { userId, isOwner, isModerator, myTeamId } = await getUserContext();
 
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
@@ -49,7 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
           <span style={{ flex: 1 }} />
 
-          <MainNav userId={userId} isOwner={isOwner} myTeamId={myTeamId} />
+          <MainNav userId={userId} isOwner={isOwner} isModerator={isModerator} myTeamId={myTeamId} />
         </header>
 
         <TickerBanner />

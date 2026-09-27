@@ -1,82 +1,48 @@
 "use client";
 import { useState, useTransition } from "react";
-import { generateSchedule, openWeek } from "../actions";
-import { CheckIcon, PlayIcon } from "./Icons";
+import { generateSchedule } from "../actions";
+import { PlayIcon, CheckIcon } from "./Icons";
 
-// Owner-only: generate the season schedule once the draft is complete, then open
-// each week to snapshot rosters. The RPCs enforce owner + preconditions; this is
-// just the trigger surface.
+// Owner-only: generate the season schedule once the draft is complete. Weeks are
+// scored directly by moderators afterward (no separate "open week" step), so this
+// is now just the schedule trigger.
 export default function SeasonControls({
-  draftComplete, weeks, opened,
+  draftComplete, scheduled,
 }: {
   draftComplete: boolean;
-  weeks: number[];
-  opened: number[];
+  scheduled: boolean;
 }) {
   const [error, setError] = useState<string | undefined>();
   const [pending, start] = useTransition();
-  const openedSet = new Set(opened);
 
-  const run = (fn: () => Promise<{ error?: string }>) => {
-    setError(undefined);
-    start(async () => {
-      const res = await fn();
-      setError(res.error);
-    });
-  };
-
-  if (weeks.length === 0) {
+  if (scheduled) {
     return (
-      <div className="stack">
-        <p className="muted" style={{ margin: 0 }}>
-          {draftComplete
-            ? "Generate the season schedule: a randomized round-robin where every team byes once and faces each other once."
-            : "The schedule can be generated once the draft is complete."}
-        </p>
-        <div className="row">
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={() => run(generateSchedule)}
-            disabled={pending || !draftComplete}
-          >
-            <PlayIcon size={14} /> {pending ? "Generating…" : "Generate schedule"}
-          </button>
-        </div>
-        {error && <p className="error" role="alert">{error}</p>}
-      </div>
+      <p className="muted" style={{ margin: 0, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+        <CheckIcon size={14} /> The schedule is set. Moderators enter weekly and exam/IM points from the Scores tab.
+      </p>
     );
   }
 
   return (
     <div className="stack">
       <p className="muted" style={{ margin: 0 }}>
-        Open a week to lock in each team&apos;s current roster for that week&apos;s scoring. A trade
-        after a week is opened won&apos;t change that week.
+        {draftComplete
+          ? "Generate the season schedule: a randomized round-robin where every team byes once and faces each other once."
+          : "The schedule can be generated once the draft is complete."}
       </p>
-      <ul className="order-list">
-        {weeks.map((w) => (
-          <li key={w} className="order-item">
-            <span className="order-pos" aria-hidden="true">{w}</span>
-            <span className="order-name">Week {w}</span>
-            {openedSet.has(w) ? (
-              <span className="badge badge-ok" style={{ marginLeft: "auto" }}>
-                <CheckIcon size={12} /> Opened
-              </span>
-            ) : (
-              <button
-                type="button"
-                className="btn-ghost btn-sm"
-                style={{ marginLeft: "auto" }}
-                onClick={() => run(() => openWeek(w))}
-                disabled={pending}
-              >
-                Open week
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+      <div className="row">
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={() => {
+            setError(undefined);
+            start(async () => setError((await generateSchedule()).error));
+          }}
+          disabled={pending || !draftComplete}
+        >
+          <PlayIcon size={14} /> {pending ? "Generating…" : "Generate schedule"}
+        </button>
+      </div>
       {error && <p className="error" role="alert">{error}</p>}
     </div>
   );

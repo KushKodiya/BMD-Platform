@@ -5,16 +5,17 @@ import { usePathname } from "next/navigation";
 import { signOut } from "../actions";
 import {
   ListIcon, SwordsIcon, CalendarIcon, ChartIcon,
-  SettingsIcon, UsersIcon, LogOutIcon, BookIcon,
+  SettingsIcon, UsersIcon, LogOutIcon, BookIcon, PlusIcon,
 } from "./Icons";
 
 // Main nav. Client-side so it can mark the active route via usePathname; the
 // links it shows depend on the flags the server layout passes in.
 export default function MainNav({
-  userId, isOwner, myTeamId,
+  userId, isOwner, isModerator, myTeamId,
 }: {
   userId: string | null;
   isOwner: boolean;
+  isModerator: boolean;
   myTeamId: string | null;
 }) {
   const path = usePathname();
@@ -27,7 +28,11 @@ export default function MainNav({
       <Link href="/matchups" className={link("/matchups")}><SwordsIcon size={14} /> Matchups</Link>
       <Link href="/schedule" className={link("/schedule")}><CalendarIcon size={14} /> Schedule</Link>
       <Link href="/standings" className={link("/standings")}><ChartIcon size={14} /> Standings</Link>
+      <Link href="/players" className={link("/players")}><UsersIcon size={14} /> Players</Link>
       <Link href="/rules" className={link("/rules")}><BookIcon size={14} /> Rules</Link>
+      {isModerator && (
+        <Link href="/scores" className={link("/scores")}><PlusIcon size={14} /> Scores</Link>
+      )}
       {isOwner && (
         <Link href="/setup" className={link("/setup")}><SettingsIcon size={14} /> Setup</Link>
       )}

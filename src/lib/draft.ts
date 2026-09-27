@@ -209,11 +209,19 @@ export async function getPublicTrades(
 export async function getUserContext() {
   const db = supabaseServer();
   const { data: { user } } = await db.auth.getUser();
-  if (!user) return { userId: null, isOwner: false, myTeamId: null as string | null };
+  if (!user) {
+    return { userId: null, isOwner: false, isModerator: false, myTeamId: null as string | null };
+  }
 
   const [{ data: profile }, { data: team }] = await Promise.all([
-    db.from("profiles").select("is_owner").eq("id", user.id).single(),
+    db.from("profiles").select("is_owner, is_moderator").eq("id", user.id).single(),
     db.from("teams").select("id").eq("admin_id", user.id).maybeSingle(),
   ]);
-  return { userId: user.id, isOwner: !!profile?.is_owner, myTeamId: team?.id ?? null };
+  return {
+    userId: user.id,
+    isOwner: !!profile?.is_owner,
+    // The owner can do anything a moderator can.
+    isModerator: !!profile?.is_moderator || !!profile?.is_owner,
+    myTeamId: team?.id ?? null,
+  };
 }
