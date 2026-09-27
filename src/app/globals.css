@@ -966,7 +966,8 @@ h1 > svg, h2 > svg, h3 > svg, .eyebrow > svg, .muted > svg, .dim > svg {
   justify-content: center;
   gap: 1rem;
 }
-.week-pager-label { font-weight: 700; font-size: 1.05rem; }
+.week-pager-label { font-weight: 700; font-size: 1.05rem; text-align: center; }
+.week-pager-dates { display: block; font-weight: 500; font-size: 0.8rem; }
 
 /* Schedule rows */
 .matchup-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }

@@ -1,4 +1,5 @@
 import { getSeasonMeta, getWeekBoard, WIN_BONUS, type MatchupTeam } from "@/lib/season";
+import { defaultWeek } from "@/lib/week.mjs";
 import WeekPager from "../_components/WeekPager";
 import { CrownIcon, SwordsIcon } from "../_components/Icons";
 
@@ -39,7 +40,7 @@ export default async function MatchupsPage({
   }
 
   const requested = Number(searchParams.week);
-  const week = weeks.includes(requested) ? requested : weeks[0];
+  const week = weeks.includes(requested) ? requested : defaultWeek(weeks)!;
   const board = (await getWeekBoard(week))!;
 
   const nameOf = (m: { home: MatchupTeam; away: MatchupTeam }, id: string | null) =>

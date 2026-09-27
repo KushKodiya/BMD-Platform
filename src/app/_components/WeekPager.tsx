@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { weekRangeLabel } from "@/lib/week.mjs";
 import { ChevronLeftIcon, ChevronRightIcon } from "./Icons";
 
 // Prev/next week navigation. Server-rendered links that set ?week=N -- no client
@@ -28,6 +29,7 @@ export default function WeekPager({
 
       <span className="week-pager-label">
         Week {week} <span className="dim">of {weeks.length}</span>
+        <span className="dim week-pager-dates">{weekRangeLabel(week)}</span>
       </span>
 
       {next != null ? (
