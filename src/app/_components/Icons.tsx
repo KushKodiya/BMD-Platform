@@ -22,6 +22,13 @@ export const CrownIcon = ({ size = 16, className }: IconProps) => (
   </svg>
 );
 
+export const BookIcon = ({ size = 16, className }: IconProps) => (
+  <svg {...base(size)} className={className}>
+    <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z" />
+    <path d="M6 19h13" />
+  </svg>
+);
+
 export const ClockIcon = ({ size = 16, className }: IconProps) => (
   <svg {...base(size)} className={className}>
     <circle cx="12" cy="12" r="9" />

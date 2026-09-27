@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import type { Matchup } from "@/lib/season";
-import { ChevronLeftIcon, ChevronRightIcon, CrownIcon } from "./Icons";
+import { ChevronLeftIcon, ChevronRightIcon, CrownIcon, SwordsIcon } from "./Icons";
 
 const fmt = (n: number | null) => (n == null ? "—" : n.toFixed(1));
 
@@ -55,11 +55,24 @@ export default function MatchupCarousel({
             <span className="h2h-team-name"><ChampionMark isChampion={m.home.isChampion} />{m.home.name}</span>
             <span className="h2h-team-total">{fmt(m.home.total)}</span>
           </div>
-          <span className="h2h-vs" aria-hidden="true">vs</span>
+          <span className="h2h-emblem" aria-hidden="true"><SwordsIcon size={18} /></span>
           <div className={"h2h-team h2h-team-right" + (awayWon ? " is-winner" : "")}>
             <span className="h2h-team-total">{fmt(m.away.total)}</span>
             <span className="h2h-team-name"><ChampionMark isChampion={m.away.isChampion} />{m.away.name}</span>
           </div>
+        </div>
+
+        <div className="h2h-dots" role="tablist" aria-label="Matchups">
+          {matchups.map((_, d) => (
+            <button
+              key={d}
+              className={"h2h-dot" + (d === i ? " is-active" : "")}
+              aria-label={`Matchup ${d + 1}`}
+              aria-selected={d === i}
+              role="tab"
+              onClick={() => setI(d)}
+            />
+          ))}
         </div>
 
         {rows > 0 ? (
@@ -71,7 +84,7 @@ export default function MatchupCarousel({
                 <div key={r} className="h2h-row">
                   <span className="h2h-name left">{hp?.name ?? ""}</span>
                   <span className="h2h-pts left">{hp ? fmt(hp.points) : ""}</span>
-                  <span className="h2h-slot">{r + 1}</span>
+                  <span className="h2h-slot"><span className="h2h-slot-pill">{r + 1}</span></span>
                   <span className="h2h-pts right">{ap ? fmt(ap.points) : ""}</span>
                   <span className="h2h-name right">{ap?.name ?? ""}</span>
                 </div>
@@ -93,18 +106,7 @@ export default function MatchupCarousel({
         <button className="btn-ghost btn-icon" onClick={() => go(-1)} aria-label="Previous matchup">
           <ChevronLeftIcon size={18} />
         </button>
-        <div className="h2h-dots" role="tablist" aria-label="Matchups">
-          {matchups.map((_, d) => (
-            <button
-              key={d}
-              className={"h2h-dot" + (d === i ? " is-active" : "")}
-              aria-label={`Matchup ${d + 1}`}
-              aria-selected={d === i}
-              role="tab"
-              onClick={() => setI(d)}
-            />
-          ))}
-        </div>
+        <span className="h2h-count">{i + 1} / {n}</span>
         <button className="btn-ghost btn-icon" onClick={() => go(1)} aria-label="Next matchup">
           <ChevronRightIcon size={18} />
         </button>
