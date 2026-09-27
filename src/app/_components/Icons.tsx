@@ -22,6 +22,12 @@ export const CrownIcon = ({ size = 16, className }: IconProps) => (
   </svg>
 );
 
+export const ShieldIcon = ({ size = 16, className }: IconProps) => (
+  <svg {...base(size)} className={className}>
+    <path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6l7-3Z" />
+  </svg>
+);
+
 export const BookIcon = ({ size = 16, className }: IconProps) => (
   <svg {...base(size)} className={className}>
     <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z" />

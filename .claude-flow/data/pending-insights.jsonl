@@ -265,3 +265,16 @@
 {"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/setup/page.tsx","success":true,"timestamp":1790541884957,"sessionId":null}
 {"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/setup/page.tsx","success":true,"timestamp":1790541891638,"sessionId":null}
 {"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/supabase/reset.sql","success":true,"timestamp":1790541895373,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/supabase/migrations/0013_moderator_team_access.sql","success":true,"timestamp":1790542141836,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/actions.ts","success":true,"timestamp":1790542147172,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/_components/ModeratorSettings.tsx","success":true,"timestamp":1790542159651,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/setup/page.tsx","success":true,"timestamp":1790542182514,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/_components/Icons.tsx","success":true,"timestamp":1790542190771,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/setup/page.tsx","success":true,"timestamp":1790542196838,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/setup/page.tsx","success":true,"timestamp":1790542207103,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/scores/page.tsx","success":true,"timestamp":1790542231340,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/scores/page.tsx","success":true,"timestamp":1790542238330,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/scores/page.tsx","success":true,"timestamp":1790542243861,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/globals.css","success":true,"timestamp":1790542252138,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/supabase/reset.sql","success":true,"timestamp":1790542255616,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/supabase/reset.sql","success":true,"timestamp":1790542258496,"sessionId":null}

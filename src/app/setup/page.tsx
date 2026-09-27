@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getBoardState, getUserContext } from "@/lib/draft";
 import { getSeasonMeta } from "@/lib/season";
+import { supabaseServer } from "@/lib/supabase/server";
 import AddPlayerForm from "../_components/AddPlayerForm";
 import OrderEditor from "../_components/OrderEditor";
 import PickTimerForm from "../_components/PickTimerForm";
@@ -8,9 +9,10 @@ import ChampionPicker from "../_components/ChampionPicker";
 import RosterEditor from "../_components/RosterEditor";
 import AddMemberForm from "../_components/AddMemberForm";
 import PlayerEditor from "../_components/PlayerEditor";
+import ModeratorSettings from "../_components/ModeratorSettings";
 import SeasonControls from "../_components/SeasonControls";
 import RemovePlayerButton from "../_components/RemovePlayerButton";
-import { CalendarIcon, ClockIcon, CrownIcon, LockIcon, SettingsIcon, UsersIcon } from "../_components/Icons";
+import { CalendarIcon, ClockIcon, CrownIcon, LockIcon, SettingsIcon, ShieldIcon, UsersIcon } from "../_components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,13 @@ export default async function SetupPage() {
 
   const { draft, teams, players, orderedTeams, rosters, available } = await getBoardState();
   const { weeks } = await getSeasonMeta();
+  const db = supabaseServer();
+  const [{ data: modRows }, { data: accessRows }] = await Promise.all([
+    db.from("profiles").select("id, email").eq("is_moderator", true).order("email"),
+    db.from("moderator_team_access").select("moderator_id, team_id"),
+  ]);
+  const moderators = (modRows ?? []) as { id: string; email: string }[];
+  const modAccess = (accessRows ?? []) as { moderator_id: string; team_id: string }[];
   const locked = draft.status !== "setup";
   // Undrafted players may be pruned mid-draft; drafted ones are the RosterEditor's domain.
   const availableIds = new Set(available.map((p) => p.id));
@@ -142,6 +151,16 @@ export default async function SetupPage() {
           <SeasonControls
             draftComplete={draft.status === "complete"}
             scheduled={weeks.length > 0}
+          />
+        </section>
+
+        {/* --- Moderator settings: which teams each moderator can score --- */}
+        <section className="card reveal" style={{ ["--i" as string]: 8 }}>
+          <h2><ShieldIcon size={19} /> Moderator settings</h2>
+          <ModeratorSettings
+            moderators={moderators}
+            teams={orderedTeams.length ? orderedTeams : teams}
+            access={modAccess}
           />
         </section>
 

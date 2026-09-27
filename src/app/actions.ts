@@ -106,6 +106,22 @@ export async function addMember(
   return {};
 }
 
+// --- Owner: grant/revoke a moderator's access to a team (RPC enforces owner) ---
+export async function setModAccess(
+  modId: string,
+  teamId: string,
+  enabled: boolean,
+): Promise<Result> {
+  const { error } = await supabaseServer().rpc("owner_set_mod_access", {
+    p_mod: modId,
+    p_team: teamId,
+    p_enabled: enabled,
+  });
+  if (error) return { error: error.message };
+  revalidatePath("/setup");
+  return {};
+}
+
 // --- Owner: edit a player's name / year / team (RPC enforces owner) ---
 export async function updatePlayer(
   playerId: string,

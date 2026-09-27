@@ -10,31 +10,52 @@ import { PlusIcon } from "../_components/Icons";
 export const dynamic = "force-dynamic";
 
 export default async function ScoresPage() {
-  const { isModerator, isOwner } = await getUserContext();
+  const { userId, isModerator, isOwner } = await getUserContext();
   if (!isModerator) redirect("/");
 
   const db = supabaseServer();
-  const [{ weeks }, { data: players }, { data: entries }] = await Promise.all([
+
+  // A non-owner moderator is scoped to the teams the owner granted them: they can
+  // only pick those teams' players and only see/remove those teams' entries.
+  let allowedTeams: Set<string> | null = null; // null = owner, no restriction
+  if (!isOwner) {
+    const { data: access } = await db
+      .from("moderator_team_access")
+      .select("team_id")
+      .eq("moderator_id", userId!);
+    allowedTeams = new Set(((access ?? []) as { team_id: string }[]).map((a) => a.team_id));
+  }
+
+  const [{ weeks }, { data: picks }, { data: players }, { data: entries }] = await Promise.all([
     getSeasonMeta(),
+    db.from("picks").select("player_id, team_id"),
     db.from("players").select("id, name").order("name"),
     db.from("score_entries")
-      .select("id, player_id, category, week, points, created_at")
+      .select("id, player_id, team_id, category, week, points, created_at")
       .order("created_at", { ascending: false })
       .limit(30),
   ]);
 
-  const playerList = (players ?? []) as { id: string; name: string }[];
-  const nameById = new Map(playerList.map((p) => [p.id, p.name]));
+  const teamOfPlayer = new Map(((picks ?? []) as { player_id: string; team_id: string }[]).map((p) => [p.player_id, p.team_id]));
+  const canScore = (teamId: string | undefined) => allowedTeams == null || (!!teamId && allowedTeams.has(teamId));
+
+  const playerList = ((players ?? []) as { id: string; name: string }[])
+    .filter((p) => canScore(teamOfPlayer.get(p.id)));
+  const nameById = new Map(((players ?? []) as { id: string; name: string }[]).map((p) => [p.id, p.name]));
   const labels = CATEGORY_LABELS as Record<string, string>;
   const recent: RecentEntry[] = ((entries ?? []) as {
-    id: string; player_id: string; category: string; week: number | null; points: number;
-  }[]).map((e) => ({
-    id: e.id,
-    playerName: nameById.get(e.player_id) ?? "—",
-    categoryLabel: labels[e.category] ?? e.category,
-    week: e.week,
-    points: Number(e.points),
-  }));
+    id: string; player_id: string; team_id: string; category: string; week: number | null; points: number;
+  }[])
+    .filter((e) => canScore(e.team_id)) // mods only see entries they may remove
+    .map((e) => ({
+      id: e.id,
+      playerName: nameById.get(e.player_id) ?? "—",
+      categoryLabel: labels[e.category] ?? e.category,
+      week: e.week,
+      points: Number(e.points),
+    }));
+
+  const noAccess = allowedTeams != null && allowedTeams.size === 0;
 
   return (
     <>
@@ -48,7 +69,12 @@ export default async function ScoresPage() {
       </header>
 
       <section className="section" style={{ marginTop: "1rem" }}>
-        {weeks.length === 0 ? (
+        {noAccess ? (
+          <div className="empty">
+            <p style={{ margin: 0 }}>You don&apos;t have access to any teams yet.</p>
+            <p className="dim" style={{ margin: 0 }}>The owner grants team access from the Setup page.</p>
+          </div>
+        ) : weeks.length === 0 ? (
           <div className="empty">
             <p style={{ margin: 0 }}>No schedule yet — the owner generates it after the draft.</p>
           </div>
