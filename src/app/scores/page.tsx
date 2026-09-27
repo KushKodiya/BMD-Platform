@@ -10,7 +10,7 @@ import { PlusIcon } from "../_components/Icons";
 export const dynamic = "force-dynamic";
 
 export default async function ScoresPage() {
-  const { isModerator } = await getUserContext();
+  const { isModerator, isOwner } = await getUserContext();
   if (!isModerator) redirect("/");
 
   const db = supabaseServer();
@@ -53,7 +53,13 @@ export default async function ScoresPage() {
             <p style={{ margin: 0 }}>No schedule yet — the owner generates it after the draft.</p>
           </div>
         ) : (
-          <ScoreEntryForm players={playerList} openWeek={openWeek(weeks)} recent={recent} />
+          <ScoreEntryForm
+            players={playerList}
+            weeks={weeks}
+            openWeek={openWeek(weeks)}
+            isOwner={isOwner}
+            recent={recent}
+          />
         )}
       </section>
     </>

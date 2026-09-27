@@ -16,9 +16,11 @@ function ChampionMark({ isChampion }: { isChampion: boolean }) {
 export default function MatchupCarousel({
   matchups,
   winBonus,
+  final,
 }: {
   matchups: Matchup[];
   winBonus: number;
+  final: boolean;
 }) {
   const [i, setI] = useState(0);
   const n = matchups.length;
@@ -97,7 +99,11 @@ export default function MatchupCarousel({
 
         {m.winnerTeamId && (
           <div className="matchup-result">
-            {(homeWon ? m.home.name : m.away.name)} wins <span className="matchup-bonus">+{winBonus}</span>
+            {final ? (
+              <>{(homeWon ? m.home.name : m.away.name)} wins <span className="matchup-bonus">+{winBonus}</span></>
+            ) : (
+              <>{(homeWon ? m.home.name : m.away.name)} leading</>
+            )}
           </div>
         )}
       </article>

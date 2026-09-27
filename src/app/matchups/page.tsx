@@ -60,7 +60,7 @@ export default async function MatchupsPage({
 
       <section className="section">
         {board.matchups.length > 0 ? (
-          <MatchupCarousel matchups={board.matchups} winBonus={WIN_BONUS} />
+          <MatchupCarousel matchups={board.matchups} winBonus={WIN_BONUS} final={board.final} />
         ) : (
           <p className="roster-empty">No matchups this week.</p>
         )}

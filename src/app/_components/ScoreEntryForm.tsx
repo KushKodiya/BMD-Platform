@@ -3,6 +3,7 @@ import { useMemo, useState, useTransition } from "react";
 import { addScore, deleteScore } from "../actions";
 import { WEEKLY_ACTIVITIES, SEASON_ACTIVITIES } from "@/lib/scoring.mjs";
 import { weekRangeLabel } from "@/lib/week.mjs";
+import PlayerCombobox from "./PlayerCombobox";
 import { PlusIcon, XIcon } from "./Icons";
 
 export type RecentEntry = {
@@ -23,10 +24,12 @@ const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
 // open right now (openWeek); exam/IM points are always open. Picking an activity
 // pre-fills its point value, which the moderator can still override.
 export default function ScoreEntryForm({
-  players, openWeek, recent,
+  players, weeks, openWeek, isOwner, recent,
 }: {
   players: Player[];
+  weeks: number[];
   openWeek: number | null;
+  isOwner: boolean;
   recent: RecentEntry[];
 }) {
   const [mode, setMode] = useState<"weekly" | "season">("weekly");
@@ -35,10 +38,15 @@ export default function ScoreEntryForm({
   const [playerId, setPlayerId] = useState("");
   const [activityKey, setActivityKey] = useState(activities[0].key);
   const [points, setPoints] = useState(String(activities[0].points));
+  // Owner-only: enter weekly points into any scheduled week, including closed ones.
+  const [override, setOverride] = useState(false);
+  const [overrideWeek, setOverrideWeek] = useState(weeks[0]);
   const [error, setError] = useState<string | undefined>();
   const [pending, start] = useTransition();
 
-  const weekClosed = mode === "weekly" && openWeek == null;
+  // The week a weekly entry targets: the override pick, else the live open week.
+  const targetWeek = override ? overrideWeek : openWeek;
+  const weekClosed = mode === "weekly" && !override && openWeek == null;
 
   const activity = useMemo(
     () => activities.find((a) => a.key === activityKey) ?? activities[0],
@@ -62,8 +70,9 @@ export default function ScoreEntryForm({
   const submit = () => {
     setError(undefined);
     const value = Number(points);
+    const week = mode === "weekly" ? targetWeek : null;
     start(async () => {
-      const res = await addScore(playerId, activity.category, value, mode === "weekly" ? openWeek : null);
+      const res = await addScore(playerId, activity.category, value, week, mode === "weekly" && override);
       if (res.error) setError(res.error);
       else setPoints(String(activity.points)); // reset for the next quick entry
     });
@@ -89,17 +98,19 @@ export default function ScoreEntryForm({
           >
             Exam / IM points
           </button>
+
+          {isOwner && mode === "weekly" && (
+            <label className="override-toggle">
+              <input type="checkbox" checked={override} onChange={(e) => setOverride(e.target.checked)} />
+              Override a closed week
+            </label>
+          )}
         </div>
 
         <div className="row" style={{ alignItems: "flex-end", flexWrap: "wrap" }}>
-          <div className="field" style={{ flex: "1 1 12rem" }}>
-            <label htmlFor="s-player">Player</label>
-            <select id="s-player" value={playerId} onChange={(e) => setPlayerId(e.target.value)}>
-              <option value="">Select a player…</option>
-              {players.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
+          <div className="field" style={{ flex: "1 1 14rem" }}>
+            <label>Player</label>
+            <PlayerCombobox players={players} value={playerId} onSelect={setPlayerId} />
           </div>
 
           <div className="field" style={{ flex: "1 1 12rem" }}>
@@ -113,12 +124,20 @@ export default function ScoreEntryForm({
 
           {mode === "weekly" && (
             <div className="field" style={{ flex: "1 1 10rem" }}>
-              <label>Open week</label>
-              <div className="week-locked">
-                {openWeek != null
-                  ? `Week ${openWeek} · ${weekRangeLabel(openWeek)}`
-                  : "No week is open right now"}
-              </div>
+              <label htmlFor={override ? "s-owk" : undefined}>{override ? "Override week" : "Open week"}</label>
+              {override ? (
+                <select id="s-owk" value={overrideWeek} onChange={(e) => setOverrideWeek(Number(e.target.value))}>
+                  {weeks.map((w) => (
+                    <option key={w} value={w}>Week {w} · {weekRangeLabel(w)}</option>
+                  ))}
+                </select>
+              ) : (
+                <div className="week-locked">
+                  {openWeek != null
+                    ? `Week ${openWeek} · ${weekRangeLabel(openWeek)}`
+                    : "No week is open right now"}
+                </div>
+              )}
             </div>
           )}
 

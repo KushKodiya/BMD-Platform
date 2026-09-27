@@ -45,7 +45,10 @@ export default function PlayersSearch({ players }: { players: PlayerSeason[] }) 
               {matches.map((p) => (
                 <tr key={p.playerId}>
                   <th scope="row" className="col-round">{p.rank}</th>
-                  <td style={{ textAlign: "left" }}>{p.name}</td>
+                  <td style={{ textAlign: "left" }}>
+                    {p.name}
+                    {p.teamName && <span className="player-team"> {p.teamName}</span>}
+                  </td>
                   <td className="dim">{fmt(p.weeklyAverage)}</td>
                   <td><strong>{fmt(p.totalPoints)}</strong></td>
                 </tr>

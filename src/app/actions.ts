@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
+import { getUserContext } from "@/lib/draft";
 import { MIN_PICK_SECONDS, MAX_PICK_SECONDS } from "@/lib/clock.mjs";
 import { currentWeek } from "@/lib/week.mjs";
 import { isWeeklyCategory } from "@/lib/scoring.mjs";
@@ -186,15 +187,24 @@ export async function addScore(
   category: string,
   points: number,
   week: number | null,
+  override = false,
 ): Promise<Result> {
   if (!playerId) return { error: "Pick a player." };
   if (!Number.isFinite(points)) return { error: "Enter a point value." };
   // Weekly points may only be entered for the one week open right now (the
   // current Sun-Sat ET week). Exam/IM points carry no week and are always open.
+  // The owner can override to enter/correct a closed week; the RPC still checks
+  // the week is a real scheduled one.
   if (isWeeklyCategory(category)) {
-    const open = currentWeek();
-    if (week == null || week !== open) {
-      return { error: `Only week ${open} is open for scoring right now.` };
+    if (override) {
+      const { isOwner } = await getUserContext();
+      if (!isOwner) return { error: "Only the owner can enter points for a closed week." };
+      if (week == null) return { error: "Pick a week to override." };
+    } else {
+      const open = currentWeek();
+      if (week == null || week !== open) {
+        return { error: `Only week ${open} is open for scoring right now.` };
+      }
     }
   }
   const { error } = await supabaseServer().rpc("mod_add_score", {

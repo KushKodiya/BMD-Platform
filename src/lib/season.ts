@@ -1,4 +1,5 @@
 import { supabaseServer } from "@/lib/supabase/server";
+import { currentWeek } from "@/lib/week.mjs";
 
 // Read side of the season layer (schedule / matchups / standings). All reads are
 // public via RLS, so viewers get these without logging in. Derivations (team
@@ -28,6 +29,7 @@ export type Matchup = { home: MatchupTeam; away: MatchupTeam; winnerTeamId: stri
 export type WeekBoard = {
   week: number;
   opened: boolean;
+  final: boolean; // the week has closed -> winners are locked and banked the 25
   matchups: Matchup[];
   byeTeam: { id: string; name: string; isChampion: boolean } | null;
 };
@@ -162,6 +164,7 @@ export async function getWeekBoard(week: number): Promise<WeekBoard | null> {
   return {
     week,
     opened,
+    final: week < currentWeek(), // closed once the ET clock passes its Saturday
     matchups: matchupList,
     byeTeam: bye ? { id: bye.id, name: bye.name, isChampion: bye.is_champion } : null,
   };
@@ -189,48 +192,85 @@ export async function getTopScorers(limit = 5): Promise<TopScorer[]> {
 export type PlayerSeason = {
   playerId: string;
   name: string;
-  totalPoints: number;   // sum of every point earned, all categories
-  weeklyAverage: number; // weekly-category points / weeks scored so far
+  teamName: string | null; // the player's team, null if not on a roster
+  totalPoints: number;     // sum of every point earned, all categories
+  weeklyAverage: number;   // weekly-category points / weeks scored so far
 };
 
-// Every player with their season total and weekly average, sorted most points
-// first. Weekly average uses only the matchup categories (office hours /
+// Every player with their team, season total, and weekly average, sorted most
+// points first. Weekly average uses only the matchup categories (office hours /
 // studying / workout) over the number of weeks that have been scored.
 export async function getPlayers(): Promise<PlayerSeason[]> {
   const db = supabaseServer();
-  const [{ data: totals }, { data: weeks }] = await Promise.all([
+  const [{ data: totals }, { data: weeks }, { data: picks }, { data: teams }] = await Promise.all([
     db.from("player_totals").select("player_id, name, total_points, weekly_points"),
     db.from("score_entries").select("week").not("week", "is", null),
+    db.from("picks").select("player_id, team_id"),
+    db.from("teams").select("id, name"),
   ]);
   const openedWeeks = new Set(((weeks ?? []) as { week: number }[]).map((r) => r.week)).size;
   const denom = Math.max(1, openedWeeks);
+  const teamName = new Map(((teams ?? []) as { id: string; name: string }[]).map((t) => [t.id, t.name]));
+  const teamOf = new Map(((picks ?? []) as { player_id: string; team_id: string }[]).map((p) => [p.player_id, p.team_id]));
   return ((totals ?? []) as { player_id: string; name: string; total_points: number; weekly_points: number }[])
     .map((r) => ({
       playerId: r.player_id,
       name: r.name,
+      teamName: teamName.get(teamOf.get(r.player_id) ?? "") ?? null,
       totalPoints: Number(r.total_points),
       weeklyAverage: Number(r.weekly_points) / denom,
     }))
     .sort((a, b) => b.totalPoints - a.totalPoints || a.name.localeCompare(b.name));
 }
 
-// Standings ranked by season points (ties broken by name). Reads the derived view.
+// Standings ranked by season points (ties broken by name).
+//
+// Season points = sum of weekly averages (all weeks, live) + season-direct
+// exam/IM points + 25 per week WON. The win bonus is only awarded once a week has
+// CLOSED -- i.e. weeks strictly before the current ET week -- so a provisional
+// lead during the live week does not bank the 25 until Saturday 23:59 ET passes.
+// Computed here rather than in the SQL `standings` view because the closed-week
+// cutoff depends on the Eastern-Time clock (see week.mjs).
 export async function getStandings(): Promise<StandingRow[]> {
   const db = supabaseServer();
-  const { data } = await db.from("standings").select("*");
-  type Row = {
-    team_id: string; name: string; is_champion: boolean;
-    season_points: number; points_from_play: number; direct_points: number; wins: number;
-  };
-  return ((data ?? []) as Row[])
-    .map((r) => ({
-      teamId: r.team_id,
-      name: r.name,
-      isChampion: r.is_champion,
-      seasonPoints: Number(r.season_points),
-      pointsFromPlay: Number(r.points_from_play),
-      directPoints: Number(r.direct_points),
-      wins: Number(r.wins),
-    }))
+  const [{ data: teams }, { data: weekScores }, { data: results }, { data: direct }] =
+    await Promise.all([
+      db.from("teams").select("id, name, is_champion"),
+      db.from("team_week_scores").select("team_id, avg_points"),
+      db.from("matchup_results").select("week, winner_team_id"),
+      db.from("team_season_direct").select("team_id, direct_points"),
+    ]);
+
+  const closedBefore = currentWeek(); // weeks strictly below this are final
+  const play = new Map<string, number>();
+  for (const r of (weekScores ?? []) as { team_id: string; avg_points: number }[]) {
+    play.set(r.team_id, (play.get(r.team_id) ?? 0) + Number(r.avg_points));
+  }
+  const directMap = new Map<string, number>();
+  for (const r of (direct ?? []) as { team_id: string; direct_points: number }[]) {
+    directMap.set(r.team_id, Number(r.direct_points));
+  }
+  const wins = new Map<string, number>();
+  for (const r of (results ?? []) as { week: number; winner_team_id: string | null }[]) {
+    if (r.winner_team_id && r.week < closedBefore) {
+      wins.set(r.winner_team_id, (wins.get(r.winner_team_id) ?? 0) + 1);
+    }
+  }
+
+  return ((teams ?? []) as TeamRow[])
+    .map((t) => {
+      const pointsFromPlay = play.get(t.id) ?? 0;
+      const directPoints = directMap.get(t.id) ?? 0;
+      const w = wins.get(t.id) ?? 0;
+      return {
+        teamId: t.id,
+        name: t.name,
+        isChampion: t.is_champion,
+        pointsFromPlay,
+        directPoints,
+        wins: w,
+        seasonPoints: pointsFromPlay + directPoints + 25 * w,
+      };
+    })
     .sort((a, b) => b.seasonPoints - a.seasonPoints || a.name.localeCompare(b.name));
 }
