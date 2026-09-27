@@ -152,6 +152,29 @@ export async function getWeekBoard(week: number): Promise<WeekBoard | null> {
   };
 }
 
+export type TopScorer = { playerId: string; name: string; points: number };
+
+// The highest individual point scorers of the season: each player's points
+// summed across every opened week. Same source as the rest of the season points
+// (player_week_scores, filled by the spreadsheet import). Aggregated here since
+// the dataset (players x weeks) is small.
+export async function getTopScorers(limit = 5): Promise<TopScorer[]> {
+  const db = supabaseServer();
+  const [{ data: scores }, { data: players }] = await Promise.all([
+    db.from("player_week_scores").select("player_id, points"),
+    db.from("players").select("id, name"),
+  ]);
+  const name = new Map(((players ?? []) as { id: string; name: string }[]).map((p) => [p.id, p.name]));
+  const total = new Map<string, number>();
+  for (const s of (scores ?? []) as { player_id: string; points: number }[]) {
+    total.set(s.player_id, (total.get(s.player_id) ?? 0) + Number(s.points));
+  }
+  return [...total.entries()]
+    .map(([playerId, points]) => ({ playerId, name: name.get(playerId) ?? "—", points }))
+    .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name))
+    .slice(0, limit);
+}
+
 // Standings ranked by season points (ties broken by name). Reads the derived view.
 export async function getStandings(): Promise<StandingRow[]> {
   const db = supabaseServer();

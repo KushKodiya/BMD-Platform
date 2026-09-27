@@ -1,4 +1,4 @@
-import { getSeasonMeta, getStandings } from "@/lib/season";
+import { getSeasonMeta, getStandings, getTopScorers } from "@/lib/season";
 import { ChartIcon, CrownIcon } from "../_components/Icons";
 
 export const dynamic = "force-dynamic";
@@ -6,7 +6,11 @@ export const dynamic = "force-dynamic";
 const fmt = (n: number) => n.toFixed(1);
 
 export default async function StandingsPage() {
-  const [{ weeks }, standings] = await Promise.all([getSeasonMeta(), getStandings()]);
+  const [{ weeks }, standings, topScorers] = await Promise.all([
+    getSeasonMeta(),
+    getStandings(),
+    getTopScorers(),
+  ]);
 
   if (weeks.length === 0) {
     return (
@@ -70,6 +74,24 @@ export default async function StandingsPage() {
           </table>
         </div>
       </section>
+
+      {topScorers.length > 0 && (
+        <section className="section" style={{ marginTop: "1.5rem" }}>
+          <h2 style={{ marginBottom: "0.6rem" }}>Top scorers</h2>
+          <p className="muted" style={{ marginTop: 0 }}>
+            Highest individual point totals across the season.
+          </p>
+          <ol className="scorer-list">
+            {topScorers.map((s, i) => (
+              <li key={s.playerId} className="scorer-row">
+                <span className="scorer-rank">{i + 1}</span>
+                <span className="scorer-name">{s.name}</span>
+                <span className="scorer-pts">{fmt(s.points)}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
     </>
   );
 }
