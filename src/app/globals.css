@@ -1131,12 +1131,14 @@ h1 > svg, h2 > svg, h3 > svg, .eyebrow > svg, .muted > svg, .dim > svg {
 }
 .h2h-dots { display: flex; align-items: center; justify-content: center; gap: 0.4rem; margin: 0.9rem 0 0.4rem; }
 .h2h-dot {
-  width: 0.45rem;
-  height: 0.45rem;
+  flex: 0 0 auto;
+  width: 0.5rem;
+  height: 0.5rem;
+  min-height: 0;                 /* override the 44px button touch target */
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.28);
   cursor: pointer;
   transition: background 0.15s, transform 0.15s;
 }
