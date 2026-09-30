@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "../actions";
 import {
   ListIcon, SwordsIcon, CalendarIcon, ChartIcon,
-  SettingsIcon, UsersIcon, LogOutIcon, BookIcon, PlusIcon,
+  SettingsIcon, UsersIcon, LogOutIcon, BookIcon, PlusIcon, ClockIcon,
 } from "./Icons";
 
 // Main nav. Client-side so it can mark the active route via usePathname; the
@@ -32,6 +32,9 @@ export default function MainNav({
       <Link href="/rules" className={link("/rules")}><BookIcon size={14} /> Rules</Link>
       {isModerator && (
         <Link href="/scores" className={link("/scores")}><PlusIcon size={14} /> Scores</Link>
+      )}
+      {isOwner && (
+        <Link href="/log" className={link("/log")}><ClockIcon size={14} /> Log</Link>
       )}
       {isOwner && (
         <Link href="/setup" className={link("/setup")}><SettingsIcon size={14} /> Setup</Link>

@@ -17,8 +17,8 @@ export const ACTIVITIES = [
   { key: "office_hours", label: "Office Hours/job related to your career", category: "office_hours", points: 0.4 },
   { key: "studying",     label: "Studying with brother(s)",                category: "studying",     points: 0.2 },
   { key: "workout",      label: "Workout",                                 category: "workout",      points: 0.2 },
-  { key: "exam_a",       label: "A on Exam",                               category: "exam",         points: 2 },
-  { key: "exam_b",       label: "B on Exam",                               category: "exam",         points: 1 },
+  { key: "exam_a",       label: "A on Exam",                               category: "exam",         points: 10 },
+  { key: "exam_b",       label: "B on Exam",                               category: "exam",         points: 5 },
   { key: "im_sport",     label: "IM Sport Enrollment",                     category: "im_sport",     points: 3 },
 ];
 

@@ -36,6 +36,7 @@ drop view if exists team_season_direct cascade;
 drop view if exists team_member_counts cascade;
 drop view if exists player_totals cascade;
 drop table if exists player_week_scores cascade;
+drop table if exists point_audit cascade;
 drop table if exists moderator_team_access cascade;
 drop table if exists score_entries cascade;
 drop table if exists season_matchups cascade;
