@@ -19,7 +19,7 @@ export const ACTIVITIES = [
   { key: "workout",      label: "Workout",                                 category: "workout",      points: 0.2 },
   { key: "exam_a",       label: "A on Exam",                               category: "exam",         points: 10 },
   { key: "exam_b",       label: "B on Exam",                               category: "exam",         points: 5 },
-  { key: "im_sport",     label: "IM Sport Enrollment",                     category: "im_sport",     points: 3 },
+  { key: "im_sport",     label: "IM Game",                                 category: "im_sport",     points: 0.5 },
 ];
 
 export const WEEKLY_ACTIVITIES = ACTIVITIES.filter((a) => isWeeklyCategory(a.category));
@@ -32,6 +32,6 @@ export const CATEGORY_LABELS = {
   studying: "Studying",
   workout: "Workout",
   exam: "Exam",
-  im_sport: "IM Sport",
+  im_sport: "IM Game",
 };
 
