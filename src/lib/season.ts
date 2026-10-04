@@ -1,5 +1,6 @@
 import { supabaseServer } from "@/lib/supabase/server";
 import { currentWeek } from "@/lib/week.mjs";
+import { WEEKLY_CATEGORIES } from "@/lib/scoring.mjs";
 
 // Read side of the season layer (schedule / matchups / standings). All reads are
 // public via RLS, so viewers get these without logging in. Derivations (team
@@ -109,7 +110,7 @@ export async function getWeekBoard(week: number): Promise<WeekBoard | null> {
       db.from("picks").select("player_id, team_id"),
       // Only the weekly-matchup categories count toward a matchup.
       db.from("score_entries").select("player_id, points")
-        .eq("week", week).in("category", ["office_hours", "studying", "workout"]),
+        .eq("week", week).in("category", WEEKLY_CATEGORIES),
       db.from("team_week_scores").select("team_id, avg_points").eq("week", week),
     ]);
   const matchupRows = (matchups ?? []) as MatchupRow[];
