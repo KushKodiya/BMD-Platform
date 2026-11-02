@@ -297,3 +297,9 @@
 {"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/supabase/migrations/0018_job_category.sql","success":true,"timestamp":1791139911877,"sessionId":null}
 {"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/lib/season.ts","success":true,"timestamp":1791139930887,"sessionId":null}
 {"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/lib/season.ts","success":true,"timestamp":1791139933679,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/supabase/migrations/0019_owner_remove_member.sql","success":true,"timestamp":1793648951961,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/actions.ts","success":true,"timestamp":1793648957820,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/_components/PlayerEditor.tsx","success":true,"timestamp":1793648964938,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/_components/PlayerEditor.tsx","success":true,"timestamp":1793648970681,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/_components/PlayerEditor.tsx","success":true,"timestamp":1793648976286,"sessionId":null}
+{"type":"edit","file":"/Users/kushkodiya/Documents/coding/BMD-Platform/src/app/setup/page.tsx","success":true,"timestamp":1793648979909,"sessionId":null}

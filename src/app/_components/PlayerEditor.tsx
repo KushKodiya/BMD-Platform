@@ -1,15 +1,24 @@
 "use client";
 import { useState, useTransition } from "react";
-import { updatePlayer } from "../actions";
+import { updatePlayer, removeMember } from "../actions";
 import PlayerCombobox from "./PlayerCombobox";
-import { CheckIcon } from "./Icons";
+import { CheckIcon, XIcon } from "./Icons";
 
 type PlayerRec = { id: string; name: string; year: string; teamId: string | null };
 type Team = { id: string; name: string };
 
 // Owner-only: search a player and correct their name, year, or team. A team
-// change moves their roster pick (see owner_update_player).
-export default function PlayerEditor({ players, teams }: { players: PlayerRec[]; teams: Team[] }) {
+// change moves their roster pick (see owner_update_player). When the draft is
+// complete, a player can also be removed from the league entirely (removeMember).
+export default function PlayerEditor({
+  players,
+  teams,
+  canRemove = false,
+}: {
+  players: PlayerRec[];
+  teams: Team[];
+  canRemove?: boolean;
+}) {
   const [selectedId, setSelectedId] = useState("");
   const [name, setName] = useState("");
   const [year, setYear] = useState("");
@@ -35,6 +44,21 @@ export default function PlayerEditor({ players, teams }: { players: PlayerRec[];
       const res = await updatePlayer(selectedId, name, year, teamId);
       if (res.error) setError(res.error);
       else setDone(`Saved ${name.trim()}.`);
+    });
+  };
+
+  const remove = () => {
+    const who = name.trim();
+    if (!confirm(`Remove ${who} from the league? They leave their team and can no longer be scored. Points already earned stay with the team.`)) return;
+    setError(undefined);
+    setDone(undefined);
+    start(async () => {
+      const res = await removeMember(selectedId);
+      if (res.error) setError(res.error);
+      else {
+        select("");
+        setDone(`Removed ${who} from the league.`);
+      }
     });
   };
 
@@ -72,6 +96,11 @@ export default function PlayerEditor({ players, teams }: { players: PlayerRec[];
           <button type="button" className="btn-primary" onClick={save} disabled={pending || !name.trim()}>
             <CheckIcon size={15} /> {pending ? "Saving…" : "Save"}
           </button>
+          {canRemove && (
+            <button type="button" className="btn-ghost" onClick={remove} disabled={pending}>
+              <XIcon size={15} /> Remove from league
+            </button>
+          )}
         </div>
       )}
 

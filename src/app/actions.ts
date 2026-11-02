@@ -145,6 +145,23 @@ export async function updatePlayer(
   return {};
 }
 
+// --- Owner: remove a person from the league entirely (RPC enforces owner + complete) ---
+// Drops their roster pick and deletes the player. Past score entries survive
+// (player_id -> null, team_id kept), so old team totals are unchanged; the player
+// can no longer be rostered or scored.
+export async function removeMember(playerId: string): Promise<Result> {
+  if (!playerId) return { error: "Pick a player." };
+  const { error } = await supabaseServer().rpc("owner_remove_member", { p_player: playerId });
+  if (error) return { error: error.message };
+  revalidatePath("/");
+  revalidatePath("/setup");
+  revalidatePath("/players");
+  revalidatePath("/matchups");
+  revalidatePath("/standings");
+  revalidatePath("/scores");
+  return {};
+}
+
 // --- Owner setup: player pool (RLS enforces owner + status=setup) ---
 export async function addPlayer(_prev: Result, form: FormData): Promise<Result> {
   const name = String(form.get("name") ?? "").trim();

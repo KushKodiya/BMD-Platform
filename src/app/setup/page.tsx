@@ -191,6 +191,7 @@ export default async function SetupPage() {
             <PlayerEditor
               players={playerRecords}
               teams={orderedTeams.length ? orderedTeams : teams}
+              canRemove={draft.status === "complete"}
             />
           </section>
         )}
